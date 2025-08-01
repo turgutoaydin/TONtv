@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PIN STRIKE: Google Edition</title>
+    <title>aa Game</title>
     <!-- Google Fonts: Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,15 +231,15 @@
     <div id="ui" class="hidden">
         <div id="stats">
             <div class="stat">
-                <div class="stat-label">SKOR</div>
+                <div class="stat-label">Score</div>
                 <div class="stat-value" id="score">0</div>
             </div>
             <div class="stat">
-                <div class="stat-label">SEVİYE</div>
+                <div class="stat-label">LvL</div>
                 <div class="stat-value" id="level">1</div>
             </div>
             <div class="stat">
-                <div class="stat-label">REKOR</div>
+                <div class="stat-label">Record</div>
                 <div class="stat-value" id="highScore">0</div>
             </div>
         </div>
@@ -250,31 +250,31 @@
     
     <div id="startScreen" class="screen">
         <div class="screen-content">
-            <h1>Pin Strike</h1>
+            <h1>aa Game</h1>
             <div class="button-container">
-                <button id="startButton">Başla</button>
-                <button id="settingsBtn" class="secondary">Ayarlar</button>
+                <button id="startButton">Start</button>
+                <button id="settingsBtn" class="secondary">Setting</button>
             </div>
         </div>
     </div>
 
     <div id="gameOverScreen" class="screen hidden">
         <div class="screen-content">
-            <h1>Oyun Bitti</h1>
-            <h2 id="finalScore">SKOR: 0</h2>
+            <h1>Game Over</h1>
+            <h2 id="finalScore">Score: 0</h2>
             <div class="button-container">
-                <button id="restartButton">Tekrar Oyna</button>
-                <button id="menuButton" class="secondary">Ana Menü</button>
+                <button id="restartButton">Play Again</button>
+                <button id="menuButton" class="secondary">Homepage</button>
             </div>
         </div>
     </div>
     
     <div id="levelUpScreen" class="screen hidden">
         <div class="screen-content">
-            <h1>Seviye Atlandı</h1>
-            <h2 id="newLevelText">Seviye 2</h2>
+            <h1>Next LvL</h1>
+            <h2 id="newLevelText">LvL 2</h2>
             <div class="button-container">
-                <button id="continueButton">Devam</button>
+                <button id="continueButton">Continue</button>
             </div>
         </div>
     </div>
@@ -283,7 +283,7 @@
         <div class="screen-content">
             <h2>Ayarlar</h2>
             <div class="settings-row">
-                <span>Ses Efektleri</span>
+                <span>Sound Effect</span>
                 <label class="toggle-switch">
                     <input type="checkbox" id="soundToggle" checked>
                     <span class="toggle-slider"></span>
