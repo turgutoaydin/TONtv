@@ -2,605 +2,736 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>aa Game v1.3.1</title>
-    <!-- Kütüphaneler -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
-    <!-- Font -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PIN STRIKE: Google Edition</title>
+    <!-- Google Fonts: Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tone.js (Dahili Ses Üretimi için) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+
     <style>
         :root {
-            --bg-color: #111827; --text-color: #f9fafb; --text-muted-color: #9ca3af;
-            --primary-color: #22d3ee; --accent-color: #f59e0b; --success-color: #4ade80;
-            --error-color: #f87171; --modal-bg-color: rgba(0, 0, 0, 0.8);
+            --primary-text: #e8eaed;
+            --secondary-text: #9aa0a6;
+            --background: #202124;
+            --surface: #303134;
+            --accent: #8ab4f8; /* Google's blue accent */
+            --power-up: #fdd663; /* Google's yellow accent */
         }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color);
-            overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+            background: var(--background);
+            font-family: 'Roboto', 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
+            color: var(--primary-text);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.5s ease;
         }
-        canvas { display: block; background-color: var(--bg-color); transition: background-color 0.3s ease; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
-        .fade-out { animation: fadeOut 0.5s ease-in-out forwards; }
-        .zoom-in { animation: zoomIn 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); }
+        
+        body.focus-mode {
+            background-color: #171717;
         }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        #gameCanvas {
+            display: block;
+            border-radius: 50%;
+            max-width: 95vw;
+            max-height: 95vw;
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+
+        #ui {
+            position: fixed;
+            top: 15px;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            background: rgba(48, 49, 52, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--secondary-text);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-text);
+        }
+
+        #progressBar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        #progress {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(32, 33, 36, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 30;
+            transition: opacity 0.4s, transform 0.4s;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .screen-content {
+            max-width: 400px;
+            width: 90%;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            margin-bottom: 16px;
+            color: var(--primary-text);
+            font-weight: 500;
+        }
+        
+        h2 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            margin-bottom: 25px;
+            color: var(--secondary-text);
+            font-weight: 400;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        button {
+            background: var(--accent);
+            border: none;
+            color: var(--background);
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(138, 180, 248, 0.2);
+        }
+
+        button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+        }
+        
+        #settingsPanel { z-index: 40; }
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .toggle-switch {
+            position: relative; display: inline-block;
+            width: 52px; height: 28px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s; border-radius: 28px;
+        }
+        .toggle-slider:before {
+            position: absolute; content: "";
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: var(--primary-text);
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .toggle-slider { background-color: var(--accent); }
+        input:checked + .toggle-slider:before { transform: translateX(24px); }
+        .settings-close {
+            position: absolute; top: 15px; right: 15px;
+            width: 30px; height: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-between h-screen p-4">
-    <!-- Üst Bilgi -->
-    <header class="w-full flex justify-between items-center p-2 bg-white/5 rounded-xl z-10">
-        <div class="flex items-center space-x-3">
-            <div id="score-display" class="text-2xl font-bold">0</div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <span id="user-info" class="text-right text-xs text-muted-color"></span>
-            <button id="theme-button" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            </button>
-            <button id="settings-button" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></circle>
-            </button>
-        </div>
-    </header>
-    <!-- Oyun Alanı -->
-    <main class="absolute inset-0 flex items-center justify-center">
-        <canvas id="gameCanvas"></canvas>
-    </main>
-    <!-- Başlangıç ve Geri Sayım Ekranı -->
-    <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center" style="background-color: var(--bg-color);">
-        <div id="start-screen" class="text-center fade-in">
-            <h1 class="text-6xl font-black tracking-tighter">aa Game</h1>
-            <p class="text-muted-color mb-8">v1.3.1</p>
-            <button id="play-button" class="w-64 py-4 px-6 font-bold text-2xl rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--primary-color); color: var(--bg-color);">
-                Oyna
-            </button>
-            <button id="leaderboard-button" class="w-64 py-4 px-6 mt-4 font-bold text-xl rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--accent-color); color: var(--bg-color);">
-                Lider Tablosu
-            </button>
-        </div>
-        <div id="countdown-display" class="hidden text-9xl font-black"></div>
-    </div>
-    <!-- Alt Bilgi -->
-    <footer class="w-full flex flex-col items-center h-16 z-10 justify-end">
-        <div id="pins-left-display" class="text-2xl font-bold tracking-wider"></div>
-    </footer>
-    <!-- Modallar -->
-    <div id="modal-container" class="z-20">
-        <div id="gameOverModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
-            <h2 class="text-6xl font-extrabold mb-4" style="color: var(--error-color);">Kaybettin!</h2>
-            <p id="gameOverScore" class="text-xl text-muted-color mb-2">Skor: 0</p>
-            <p id="gameOverLevel" class="text-lg text-muted-color mb-8">Seviye: 1</p>
-            <button id="retryButton" class="w-full max-w-xs py-3 px-6 font-bold rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--accent-color); color: var(--bg-color);">Tekrar Dene</button>
-        </div>
-        <div id="levelCompleteModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
-            <h2 class="text-6xl font-extrabold mb-4" style="color: var(--success-color);">Harika!</h2>
-            <p id="levelCompleteScore" class="text-xl text-muted-color mb-8"></p>
-            <button id="nextLevelButton" class="w-full max-w-xs py-3 px-6 font-bold rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--primary-color); color: var(--bg-color);">Sıradaki Seviye</button>
-        </div>
-        <div id="themeModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
-            <h2 class="text-3xl font-bold mb-8">Tema Seç</h2>
-            <div id="theme-options" class="grid grid-cols-2 gap-4"></div>
-            <button id="closeThemeModal" class="mt-8 text-sm text-muted-color">Kapat</button>
-        </div>
-        <div id="settingsModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
-            <h2 class="text-3xl font-bold mb-8">Ayarlar</h2>
-            <div class="w-full max-w-xs">
-                <label class="block text-sm mb-2">Bildirimler</label>
-                <input type="checkbox" id="notifications-toggle" class="toggle-checkbox">
+<body>
+    <div id="ui" class="hidden">
+        <div id="stats">
+            <div class="stat">
+                <div class="stat-label">SKOR</div>
+                <div class="stat-value" id="score">0</div>
             </div>
-            <button id="closeSettingsModal" class="mt-8 text-sm text-muted-color">Kapat</button>
+            <div class="stat">
+                <div class="stat-label">SEVİYE</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">REKOR</div>
+                <div class="stat-value" id="highScore">0</div>
+            </div>
         </div>
-        <div id="leaderboardModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
-            <h2 class="text-3xl font-bold mb-8">Lider Tablosu</h2>
-            <div id="leaderboard-content" class="w-full max-w-xs text-center"></div>
-            <button id="closeLeaderboardModal" class="mt-8 text-sm text-muted-color">Kapat</button>
+        <div id="progressBar"><div id="progress"></div></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="startScreen" class="screen">
+        <div class="screen-content">
+            <h1>Pin Strike</h1>
+            <div class="button-container">
+                <button id="startButton">Başla</button>
+                <button id="settingsBtn" class="secondary">Ayarlar</button>
+            </div>
         </div>
     </div>
+
+    <div id="gameOverScreen" class="screen hidden">
+        <div class="screen-content">
+            <h1>Oyun Bitti</h1>
+            <h2 id="finalScore">SKOR: 0</h2>
+            <div class="button-container">
+                <button id="restartButton">Tekrar Oyna</button>
+                <button id="menuButton" class="secondary">Ana Menü</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="levelUpScreen" class="screen hidden">
+        <div class="screen-content">
+            <h1>Seviye Atlandı</h1>
+            <h2 id="newLevelText">Seviye 2</h2>
+            <div class="button-container">
+                <button id="continueButton">Devam</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settingsPanel" class="screen hidden">
+        <div class="screen-content">
+            <h2>Ayarlar</h2>
+            <div class="settings-row">
+                <span>Ses Efektleri</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="settings-row">
+                <span>Titreşim</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="vibrationToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="settings-close">✕</div>
+        </div>
+    </div>
+
     <script>
-    // --- OYUN MOTORU ---
-    const Game = {
-        // --- Değişkenler ve Ayarlar ---
-        state: 'loading',
-        score: 0,
-        level: 1,
-        config: {
-            rotationSpeed: 0.01,
-            pinSpeed: 25,
-            basePins: 7,
-            circleRadius: 80,
-            pinLength: 45,
-            pinHeadRadius: 7,
-        },
-        elements: {},
-        sfx: {},
-        canvas: null,
-        ctx: null,
-        center: {},
-        circle: null,
-        pins: [],
-        waitingPins: [],
-        staticPins: [],
-        particles: [],
-        animationFrameId: null,
-        botToken: '8346545549:AAEz6v_9c68o3aewr4HSt8h9KXAwzJmd7Cs',
-        botName: '@aaGameTONBot',
-        userId: null,
-        settings: { notifications: true },
-        clickDebounce: false,
-        // --- Başlatma Fonksiyonu ---
-        init() {
-            this.tg = window.Telegram?.WebApp || { initDataUnsafe: {}, expand: () => {}, enableClosingConfirmation: () => {}, MainButton: { show: () => {}, setText: () => {}, onClick: () => {} }, BackButton: { onClick: () => {} }, HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} }, CloudStorage: { setItem: () => {}, getItem: () => {} }, openTelegramLink: () => {} };
-            this.tg.expand();
-            this.tg.enableClosingConfirmation();
-            // DOM elementlerini ata
-            const ids = ['score-display', 'user-info', 'theme-button', 'settings-button', 'gameCanvas', 'overlay', 'start-screen', 'play-button', 'countdown-display', 'pins-left-display', 'gameOverModal', 'gameOverScore', 'gameOverLevel', 'retryButton', 'levelCompleteModal', 'levelCompleteScore', 'nextLevelButton', 'themeModal', 'theme-options', 'closeThemeModal', 'settingsModal', 'notifications-toggle', 'closeSettingsModal', 'leaderboard-button', 'leaderboardModal', 'leaderboard-content', 'closeLeaderboardModal'];
-            ids.forEach(id => this.elements[id] = document.getElementById(id));
-            if (!this.elements['play-button']) {
-                console.error('play-button bulunamadı!');
-                return;
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        const CONFIG = {
+            PIN_LENGTH_RATIO: 0.1,
+            PIN_HEAD_RADIUS_RATIO: 0.015,
+            PIN_FLY_SPEED: 20,
+            COLORS: {
+                PIN: 'rgba(232, 234, 237, 0.8)',
+                FLYING_PIN: 'rgba(138, 180, 248, 1)',
+                CIRCLE: 'rgba(255, 255, 255, 0.05)',
+                POWERUP: '#fdd663',
+                SHIELD: 'rgba(138, 180, 248, 0.3)',
+            },
+            LEVELS: [
+                { pins: 5, speed: 0.007, powerUpChance: 0.1 },
+                { pins: 6, speed: 0.008, powerUpChance: 0.15 },
+                { pins: 7, speed: 0.009, powerUpChance: 0.2, reverse: true },
+                { pins: 8, speed: 0.011, powerUpChance: 0.25 },
+                { pins: 9, speed: 0.013, powerUpChance: 0.3, reverse: true },
+                { pins: 10, speed: 0.015, powerUpChance: 0.35 },
+                { pins: 12, speed: 0.017, powerUpChance: 0.4, reverse: true },
+            ],
+            POWERUPS: {
+                slow: { duration: 300 },
+                shield: { duration: 1 }, // 1 vuruşluk
+                score: { duration: 300 },
+            },
+            FOCUS_MODE_LEVEL: 4,
+        };
+
+        class SoundManager {
+            constructor() { this.isUnlocked = false; this.synths = {}; }
+            async unlockAudio() {
+                if (this.isUnlocked) return;
+                try {
+                    await Tone.start();
+                    this.synths = {
+                        shoot: new Tone.PluckSynth({ attackNoise: 0.5, dampening: 4000, resonance: 0.8 }).toDestination(),
+                        hit: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 2, envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination(),
+                        gameOver: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.4 } }).toDestination(),
+                        powerUp: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
+                        levelUp: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
+                    };
+                    this.isUnlocked = true;
+                } catch(e) { console.error("Ses motoru başlatılamadı.", e); }
             }
-            this.canvas = this.elements.gameCanvas;
-            this.ctx = this.canvas.getContext('2d');
-            this.initSfx();
-            this.initThemes();
-            this.initUser();
-            this.initSettings();
-            this.initEventListeners();
-            this.resizeCanvas();
-            this.setupLevel();
-            this.state = 'ready';
-            this.tg.MainButton.setText('Skoru Paylaş').show().onClick(() => this.debounceClick(() => this.shareScore()));
-            this.loadProgress();
-            console.log("Oyun hazır. Başlatılmayı bekliyor.");
-        },
-        // --- Ses Efektleri ---
-        initSfx() {
-            this.sfx.shoot = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
-            this.sfx.hit = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
-            this.sfx.error = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination();
-            this.sfx.levelUp = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmtriangle' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
-            this.sfx.uiClick = new Tone.MembraneSynth().toDestination();
-        },
-        // --- Oyun Akışı ---
-        start() {
-            if (this.state !== 'ready') return;
-            Tone.start().then(() => {
-                this.sfx.uiClick.triggerAttackRelease("C2", "8n");
-                this.elements['start-screen'].classList.replace('fade-in', 'fade-out');
-                this.state = 'countdown';
-                let count = 3;
-                const countdownInterval = setInterval(() => {
-                    if (count > 0) {
-                        this.elements.countdownDisplay.textContent = count;
-                        this.elements.countdownDisplay.classList.remove('hidden');
-                        this.elements.countdownDisplay.classList.add('zoom-in');
-                        this.sfx.hit.triggerAttackRelease(count === 1 ? "C5" : "C4", "8n");
-                        setTimeout(() => this.elements.countdownDisplay.classList.remove('zoom-in'), 300);
-                        count--;
-                    } else {
-                        clearInterval(countdownInterval);
-                        this.elements.overlay.classList.add('hidden');
-                        this.state = 'playing';
-                        this.gameLoop();
+            play(sound) {
+                if (!this.isUnlocked || !this.synths[sound]) return;
+                try {
+                    switch(sound) {
+                        case 'shoot': this.synths.shoot.triggerAttackRelease('C5', '8n'); break;
+                        case 'hit': this.synths.hit.triggerAttackRelease('C2', '8n'); break;
+                        case 'gameOver': this.synths.gameOver.triggerAttackRelease('G2', '4n'); break;
+                        case 'powerUp': this.synths.powerUp.triggerAttackRelease('G5', '16n'); break;
+                        case 'levelUp': 
+                            this.synths.levelUp.triggerAttackRelease('C4', '16n', Tone.now());
+                            this.synths.levelUp.triggerAttackRelease('G4', '16n', Tone.now() + 0.2);
+                            break;
                     }
-                }, 800);
-            }).catch(err => console.error('Ses başlatma hatası:', err));
-        },
-        gameLoop() {
-            if (this.state !== 'playing') return;
-            this.update();
-            this.draw();
-            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
-        },
-        update() {
-            this.circle.angle += this.config.rotationSpeed;
-            if (this.waitingPins.length > 0) {
-                const currentPin = this.waitingPins[0];
-                if (currentPin.isFlying) {
-                    currentPin.y -= this.config.pinSpeed;
-                    this.checkCollision(currentPin);
-                }
+                } catch (e) { /* ignore */ }
             }
-            this.particles.forEach((p, i) => {
-                p.update();
-                if (p.life <= 0) this.particles.splice(i, 1);
-            });
-        },
-        draw() {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.fillStyle = this.getThemeColor('--text-color');
-            this.ctx.beginPath();
-            this.ctx.arc(this.center.x, this.center.y, this.config.circleRadius, 0, Math.PI * 2);
-            this.ctx.fill();
-            [...this.pins, ...this.staticPins].forEach(p => this.drawPin(p));
-            if (this.waitingPins.length > 0) {
-                this.drawPin(this.waitingPins[0]);
-            }
-            this.particles.forEach(p => p.draw(this.ctx));
-        },
-        // --- Olaylar ve Mekanizmalar ---
-        shootPin() {
-            if (this.state !== 'playing' || this.waitingPins.length === 0) return;
-            const currentPin = this.waitingPins[0];
-            if (!currentPin.isFlying) {
-                currentPin.isFlying = true;
-                this.sfx.shoot.triggerAttackRelease("G3", "8n");
-                this.tg.HapticFeedback.impactOccurred('light');
-            }
-        },
-        checkCollision(flyingPin) {
-            const hitDistance = this.center.y + this.config.circleRadius;
-            if (flyingPin.y <= hitDistance) {
-                flyingPin.isFlying = false;
-                const newPinAngle = -Math.PI / 2 - this.circle.angle;
-                const collisionThreshold = Math.atan2(this.config.pinHeadRadius * 2.2, this.config.circleRadius);
-                const allPins = [...this.pins, ...this.staticPins];
-                for (const pin of allPins) {
-                    const pinAngle = pin.isStatic ? pin.angle : pin.angle + this.circle.angle;
-                    const newAngleGlobal = newPinAngle + this.circle.angle;
-                    if (Math.abs(this.normalizeAngle(pinAngle) - this.normalizeAngle(newAngleGlobal)) < collisionThreshold) {
-                        this.gameOver(flyingPin, pin);
-                        return;
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.ui = {
+                    score: document.getElementById('score'),
+                    level: document.getElementById('level'),
+                    highScore: document.getElementById('highScore'),
+                    progress: document.getElementById('progress'),
+                    finalScore: document.getElementById('finalScore'),
+                    newLevelText: document.getElementById('newLevelText'),
+                    screens: {
+                        start: document.getElementById('startScreen'),
+                        gameOver: document.getElementById('gameOverScreen'),
+                        levelUp: document.getElementById('levelUpScreen'),
+                        settings: document.getElementById('settingsPanel'),
+                        ui: document.getElementById('ui'),
                     }
-                }
-                this.sfx.hit.triggerAttackRelease("C5", "8n");
-                this.createParticles(this.center.x, hitDistance);
-                this.pins.push({ angle: newPinAngle, isStatic: false, color: this.getThemeColor('--text-color') });
-                this.waitingPins.shift();
-                this.updateScore(10 * this.level);
-                this.elements.pinsLeftDisplay.textContent = `Kalan: ${this.waitingPins.length}`;
-                if (this.waitingPins.length === 0) { this.levelComplete(); }
+                };
+                
+                this.soundManager = new SoundManager();
+                this.animationFrameId = null;
+                this.lastTime = 0;
+                this.state = 'ready'; // ready, playing, paused, levelup, ended
+                this.settings = { sound: true, vibration: true };
+
+                this.gameLoop = this.gameLoop.bind(this);
+                this.init();
             }
-        },
-        gameOver(collidingPin, hitPin) {
-            this.state = 'over';
-            cancelAnimationFrame(this.animationFrameId);
-            this.tg.HapticFeedback.notificationOccurred('error');
-            this.sfx.error.triggerAttackRelease("F#2", "4n");
-            collidingPin.color = this.getThemeColor('--error-color');
-            hitPin.color = this.getThemeColor('--error-color');
-            this.draw();
-            this.canvas.classList.add('shake');
-            this.saveProgress();
-            this.sendGameEvent(`Oyun Bitti! Skor: ${this.score}, Seviye: ${this.level}`);
-            setTimeout(() => {
-                this.elements.gameOverScore.textContent = `Skor: ${this.score}`;
-                this.elements.gameOverLevel.textContent = `Seviye: ${this.level}`;
-                this.elements.gameOverModal.classList.remove('hidden');
-                this.canvas.classList.remove('shake');
-            }, 800);
-        },
-        levelComplete() {
-            this.state = 'over';
-            cancelAnimationFrame(this.animationFrameId);
-            this.tg.HapticFeedback.notificationOccurred('success');
-            this.sfx.levelUp.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
-            this.updateScore(100 * this.level);
-            this.saveProgress();
-            this.sendGameEvent(`Seviye ${this.level} Tamamlandı! Skor: ${this.score}`);
-            this.elements.levelCompleteScore.textContent = `Skor: ${this.score}`;
-            this.elements.levelCompleteModal.classList.remove('hidden');
-        },
-        nextLevel() {
-            this.level++;
-            this.config.rotationSpeed *= 1.08;
-            if (this.level % 4 === 0) this.config.rotationSpeed *= -1;
-            this.elements.levelCompleteModal.classList.add('hidden');
-            this.setupLevel();
-            this.state = 'ready';
-            this.start();
-        },
-        reset() {
-            this.elements.gameOverModal.classList.add('hidden');
-            this.level = 1;
-            this.score = 0;
-            this.updateScore(0);
-            this.config.rotationSpeed = 0.01;
-            this.setupLevel();
-            this.state = 'ready';
-            this.saveProgress();
-            this.start();
-        },
-        // --- Kurulum ve Yardımcılar ---
-        setupLevel() {
-            this.circle = { angle: 0 };
-            this.pins = [];
-            this.waitingPins = [];
-            this.staticPins = [];
-            if (this.level > 2) {
-                const staticPinCount = Math.floor(this.level / 2) - 1;
-                for (let i = 0; i < staticPinCount; i++) {
-                    this.staticPins.push({ angle: Math.random() * Math.PI * 2, isStatic: true, color: this.getThemeColor('--text-muted-color') });
-                }
+
+            init() {
+                this.loadSettings();
+                this.setupEventListeners();
+                this.resizeCanvas();
+                this.draw();
             }
-            const totalPins = this.config.basePins + Math.floor(this.level / 2);
-            for (let i = 0; i < totalPins; i++) {
-                this.waitingPins.push({ y: this.canvas.height - this.config.pinHeadRadius * 8, isFlying: false, color: this.getThemeColor('--text-color') });
-            }
-            this.elements.pinsLeftDisplay.textContent = `Kalan: ${this.waitingPins.length}`;
-            this.draw();
-        },
-        drawPin(pin) {
-            this.ctx.fillStyle = pin.color;
-            this.ctx.strokeStyle = pin.color;
-            this.ctx.lineWidth = 3;
-            if (pin.angle !== undefined) {
-                const currentAngle = pin.angle + (pin.isStatic ? 0 : this.circle.angle);
-                const startX = this.center.x + Math.cos(currentAngle) * this.config.circleRadius;
-                const startY = this.center.y + Math.sin(currentAngle) * this.config.circleRadius;
-                const endX = this.center.x + Math.cos(currentAngle) * (this.config.circleRadius + this.config.pinLength);
-                const endY = this.center.y + Math.sin(currentAngle) * (this.config.circleRadius + this.config.pinLength);
-                this.ctx.beginPath();
-                this.ctx.moveTo(startX, startY);
-                this.ctx.lineTo(endX, endY);
-                this.ctx.stroke();
-                this.ctx.beginPath();
-                this.ctx.arc(endX, endY, this.config.pinHeadRadius, 0, Math.PI * 2);
-                this.ctx.fill();
-            } else {
-                this.ctx.beginPath();
-                this.ctx.arc(this.center.x, pin.y, this.config.pinHeadRadius, 0, Math.PI * 2);
-                this.ctx.fill();
-            }
-        },
-        createParticles(x, y) {
-            for (let i = 0; i < 20; i++) {
-                this.particles.push(new Particle(x, y, this.getThemeColor('--primary-color')));
-            }
-        },
-        updateScore(points) {
-            this.score += points;
-            this.elements.scoreDisplay.textContent = this.score;
-        },
-        resizeCanvas() {
-            const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
-            this.canvas.width = size;
-            this.canvas.height = size;
-            this.center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
-            this.config.circleRadius = size * 0.2;
-            this.config.pinLength = size * 0.12;
-            this.config.pinHeadRadius = size * 0.02;
-            this.draw();
-        },
-        normalizeAngle: (angle) => (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI),
-        // --- Tema ve Kullanıcı ---
-        initThemes() {
-            const themes = {
-                dark: { name: 'Karanlık', colors: { '--bg-color': '#111827', '--text-color': '#f9fafb', '--text-muted-color': '#9ca3af', '--primary-color': '#22d3ee', '--accent-color': '#f59e0b', '--success-color': '#4ade80', '--error-color': '#f87171', '--modal-bg-color': 'rgba(0,0,0,0.8)' } },
-                light: { name: 'Aydınlık', colors: { '--bg-color': '#f3f4f6', '--text-color': '#1f2937', '--text-muted-color': '#4b5563', '--primary-color': '#0891b2', '--accent-color': '#f97316', '--success-color': '#22c55e', '--error-color': '#ef4444', '--modal-bg-color': 'rgba(255,255,255,0.8)' } },
-            };
-            Object.keys(themes).forEach(key => {
-                const theme = themes[key];
-                const button = document.createElement('button');
-                button.className = 'p-4 rounded-lg text-left';
-                button.style.backgroundColor = theme.colors['--bg-color'];
-                button.style.color = theme.colors['--text-color'];
-                button.style.border = `2px solid ${theme.colors['--primary-color']}`;
-                button.textContent = theme.name;
-                button.addEventListener('click', () => {
-                    const themeColors = themes[key].colors;
-                    for (const [k, v] of Object.entries(themeColors)) {
-                        document.documentElement.style.setProperty(k, v);
-                    }
-                    localStorage.setItem('pinMasterTheme', key);
-                    this.saveProgress();
-                    this.draw();
-                    this.elements.themeModal.classList.add('hidden');
+            
+            setupEventListeners() {
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    if (this.state !== 'playing') this.draw();
                 });
-                this.elements.themeOptions.appendChild(button);
-            });
-            const savedTheme = localStorage.getItem('pinMasterTheme') || 'dark';
-            const themeColors = themes[savedTheme].colors;
-            for (const [k, v] of Object.entries(themeColors)) {
-                document.documentElement.style.setProperty(k, v);
-            }
-        },
-        initUser() {
-            if (this.tg.initDataUnsafe?.user) {
-                const user = this.tg.initDataUnsafe.user;
-                this.userId = user.id;
-                this.elements.userInfo.textContent = `@${user.username || user.first_name}`;
-            } else {
-                this.elements.userInfo.textContent = '@Bilinmeyen';
-            }
-        },
-        initSettings() {
-            this.elements['notifications-toggle'].checked = this.settings.notifications;
-            this.elements['notifications-toggle'].addEventListener('change', () => {
-                this.settings.notifications = this.elements['notifications-toggle'].checked;
-                this.saveProgress();
-            });
-        },
-        // --- Telegram Bot Entegrasyonu ---
-        async sendGameEvent(message) {
-            if (!this.userId || !this.settings.notifications) return;
-            try {
-                await axios.post(`https://api.telegram.org/bot${this.botToken}/sendMessage`, {
-                    chat_id: this.userId,
-                    text: message,
+                
+                document.getElementById('startButton').addEventListener('click', () => this.startGame());
+                document.getElementById('restartButton').addEventListener('click', () => this.startGame());
+                document.getElementById('continueButton').addEventListener('click', () => this.continueToNextLevel());
+                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings(true));
+                document.querySelector('.settings-close').addEventListener('click', () => this.showSettings(false));
+                document.getElementById('menuButton').addEventListener('click', () => this.showScreen('start'));
+                
+                document.getElementById('soundToggle').addEventListener('change', (e) => this.toggleSetting('sound', e.target.checked));
+                document.getElementById('vibrationToggle').addEventListener('change', (e) => this.toggleSetting('vibration', e.target.checked));
+                
+                const shootAction = (e) => {
+                    if (this.state === 'playing') {
+                        e.preventDefault();
+                        this.shootPin();
+                    }
+                };
+                this.canvas.addEventListener('mousedown', shootAction);
+                this.canvas.addEventListener('touchstart', shootAction);
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && this.state === 'playing') this.shootPin();
                 });
-            } catch (error) {
-                console.error('Bot mesajı gönderilemedi:', error);
             }
-        },
-        async fetchLeaderboard() {
-            this.elements['leaderboard-content'].textContent = 'Yükleniyor...';
-            try {
-                const response = await axios.get(`https://api.telegram.org/bot${this.botToken}/getUpdates`);
-                const scores = {};
-                response.data.result.forEach(update => {
-                    if (update.message?.text?.startsWith('/score')) {
-                        const parts = update.message.text.split(' ');
-                        if (parts.length === 3) {
-                            const user = update.message.from.username || update.message.from.first_name;
-                            const score = parseInt(parts[2]);
-                            if (!scores[user] || scores[user] < score) {
-                                scores[user] = score;
+
+            async startGame() {
+                await this.soundManager.unlockAudio();
+                this.level = 1;
+                this.score = 0;
+                this.highScore = parseInt(localStorage.getItem('googlePinStrikeHighScore') || '0');
+                this.activePowerUps = {};
+                this.setupLevel();
+                this.showScreen(null);
+                this.state = 'playing';
+                this.lastTime = performance.now();
+                this.animationFrameId = requestAnimationFrame(this.gameLoop);
+            }
+
+            setupLevel() {
+                const levelIndex = this.level - 1;
+                let levelConfig;
+
+                if (levelIndex < CONFIG.LEVELS.length) {
+                    levelConfig = CONFIG.LEVELS[levelIndex];
+                } else {
+                    const lastLevel = CONFIG.LEVELS[CONFIG.LEVELS.length - 1];
+                    levelConfig = {
+                        pins: Math.min(15, lastLevel.pins + (levelIndex - CONFIG.LEVELS.length + 1)),
+                        speed: Math.min(0.025, lastLevel.speed + (levelIndex - CONFIG.LEVELS.length + 1) * 0.0005),
+                        powerUpChance: Math.min(0.5, lastLevel.powerUpChance + 0.02),
+                        reverse: Math.random() > 0.5
+                    };
+                }
+
+                this.pinsToShoot = levelConfig.pins;
+                this.maxPinsForLevel = levelConfig.pins;
+                this.pinsOnCircle = [];
+                this.powerUpsOnCircle = [];
+                this.circle = { 
+                    angle: Math.random() * Math.PI * 2, // Rastgele başlangıç açısı
+                    speed: levelConfig.speed, 
+                    direction: levelConfig.reverse ? -1 : 1 
+                };
+                
+                if (this.level >= CONFIG.FOCUS_MODE_LEVEL) {
+                    document.body.classList.add('focus-mode');
+                } else {
+                    document.body.classList.remove('focus-mode');
+                }
+                
+                if (Math.random() < levelConfig.powerUpChance) this.spawnPowerUp();
+                
+                this.spawnPin();
+                this.updateUI();
+            }
+            
+            spawnPowerUp() {
+                const powerUpTypes = Object.keys(CONFIG.POWERUPS);
+                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                this.powerUpsOnCircle.push({
+                    angle: Math.random() * Math.PI * 2,
+                    type: type
+                });
+            }
+
+            continueToNextLevel() {
+                this.setupLevel();
+                this.showScreen(null);
+                this.state = 'playing';
+                this.lastTime = performance.now();
+                this.animationFrameId = requestAnimationFrame(this.gameLoop);
+            }
+
+            resizeCanvas() {
+                const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.center = { x: size / 2, y: size / 2 };
+                this.circleRadius = size * 0.25;
+                this.pinLength = size * CONFIG.PIN_LENGTH_RATIO;
+                this.pinHeadRadius = size * CONFIG.PIN_HEAD_RADIUS_RATIO;
+            }
+            
+            spawnPin() {
+                this.currentPin = {
+                    y: this.canvas.height - this.pinLength * 2,
+                    isFlying: false
+                };
+            }
+
+            shootPin() {
+                if (this.state !== 'playing' || !this.currentPin || this.currentPin.isFlying) return;
+                this.currentPin.isFlying = true;
+                if(this.settings.sound) this.soundManager.play('shoot');
+                if(this.settings.vibration) navigator.vibrate(50);
+            }
+
+            gameOver() {
+                this.state = 'ended';
+                cancelAnimationFrame(this.animationFrameId);
+                if(this.settings.sound) this.soundManager.play('gameOver');
+                if(this.settings.vibration) navigator.vibrate([100, 50, 100]);
+                this.showScreen('gameOver');
+                this.updateUI();
+            }
+            
+            levelUp() {
+                this.state = 'levelup';
+                cancelAnimationFrame(this.animationFrameId); // Stop the loop
+                this.level++;
+                if(this.settings.sound) this.soundManager.play('levelUp');
+                if(this.settings.vibration) navigator.vibrate(100);
+                this.showScreen('levelUp');
+                this.updateUI();
+            }
+
+            gameLoop(time) {
+                if (this.state !== 'playing') return;
+                const deltaTime = Math.min(2, (time - this.lastTime) / (1000 / 60));
+                this.lastTime = time;
+                this.update(deltaTime);
+                this.draw();
+                this.animationFrameId = requestAnimationFrame(this.gameLoop);
+            }
+
+            update(deltaTime) {
+                let speedMultiplier = this.activePowerUps.slow ? 0.5 : 1;
+                this.circle.angle += this.circle.speed * this.circle.direction * speedMultiplier * deltaTime;
+
+                if (this.currentPin && this.currentPin.isFlying) {
+                    this.currentPin.y -= CONFIG.PIN_FLY_SPEED * deltaTime;
+                    this.checkCollision();
+                }
+
+                Object.keys(this.activePowerUps).forEach(key => {
+                    if (key !== 'shield') {
+                        this.activePowerUps[key] -= deltaTime;
+                        if (this.activePowerUps[key] <= 0) delete this.activePowerUps[key];
+                    }
+                });
+            }
+            
+            checkCollision() {
+                if (!this.currentPin) return;
+                const pinTipY = this.currentPin.y;
+                const distanceToCenter = this.center.y - pinTipY;
+
+                if (distanceToCenter >= this.circleRadius) {
+                    const newPinAngle = 1.5 * Math.PI - this.circle.angle;
+                    const threshold = Math.atan2(this.pinHeadRadius, this.circleRadius) * 2.6;
+
+                    for (const p of this.pinsOnCircle) {
+                        let angleDiff = Math.abs(p.angle - newPinAngle);
+                        if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+                        if (angleDiff < threshold) {
+                            if (this.activePowerUps.shield) {
+                                delete this.activePowerUps.shield;
+                                if (this.pinsOnCircle.length < this.maxPinsForLevel) {
+                                    this.spawnPin();
+                                } else {
+                                    this.levelUp();
+                                }
+                                this.updateUI();
+                                return;
                             }
+                            this.gameOver();
+                            return;
                         }
                     }
-                });
-                const sortedScores = Object.entries(scores)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10);
-                let content = '';
-                sortedScores.forEach(([user, score], index) => {
-                    content += `${index + 1}. @${user}: ${score}\n`;
-                });
-                this.elements['leaderboard-content'].textContent = content || 'Henüz skor yok.';
-            } catch (error) {
-                console.error('Lider tablosu alınamadı:', error);
-                this.elements['leaderboard-content'].textContent = 'Lider tablosu yüklenemedi.';
-            }
-        },
-        shareScore() {
-            const text = `aa Game'de ${this.score} skor yaptım! Seviye: ${this.level} 🎯 Oynamak için ${this.botName}'u başlat!`;
-            this.tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/aaGameTONBot')}&text=${encodeURIComponent(text)}`);
-            this.sendGameEvent(`/score @${this.tg.initDataUnsafe?.user?.username || 'Bilinmeyen'} ${this.score}`);
-        },
-        // --- Veri Kalıcılığı ---
-        saveProgress() {
-            const progress = {
-                score: this.score,
-                level: this.level,
-                theme: localStorage.getItem('pinMasterTheme') || 'dark',
-                settings: this.settings,
-            };
-            localStorage.setItem('pinMasterProgress', JSON.stringify(progress));
-            if (this.tg.CloudStorage) {
-                this.tg.CloudStorage.setItem('pinMasterProgress', JSON.stringify(progress), (error) => {
-                    if (error) console.error('Bulut depolama hatası:', error);
-                });
-            }
-        },
-        loadProgress() {
-            if (this.tg.CloudStorage) {
-                this.tg.CloudStorage.getItem('pinMasterProgress', (error, value) => {
-                    if (!error && value) {
-                        const progress = JSON.parse(value);
-                        this.score = progress.score || 0;
-                        this.level = progress.level || 1;
-                        this.settings = progress.settings || { notifications: true };
-                        localStorage.setItem('pinMasterTheme', progress.theme || 'dark');
-                        this.updateScore(0);
-                        this.setupLevel();
+                    
+                    this.powerUpsOnCircle = this.powerUpsOnCircle.filter(p => {
+                        let angleDiff = Math.abs(p.angle - newPinAngle);
+                        if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+                        if (angleDiff < threshold) {
+                            this.activatePowerUp(p.type);
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if(this.settings.sound) this.soundManager.play('hit');
+                    this.pinsOnCircle.push({ angle: newPinAngle });
+                    this.score += this.activePowerUps.score ? 20 : 10;
+                    
+                    if (this.pinsOnCircle.length === this.maxPinsForLevel) {
+                        this.levelUp();
                     } else {
-                        this.loadLocalProgress();
+                        this.spawnPin();
                     }
-                });
-            } else {
-                this.loadLocalProgress();
-            }
-        },
-        loadLocalProgress() {
-            const progress = JSON.parse(localStorage.getItem('pinMasterProgress') || '{}');
-            this.score = progress.score || 0;
-            this.level = progress.level || 1;
-            this.settings = progress.settings || { notifications: true };
-            this.updateScore(0);
-            this.setupLevel();
-        },
-        // --- Buton Tıklama Debounce ---
-        debounceClick(callback) {
-            if (this.clickDebounce) return;
-            this.clickDebounce = true;
-            callback();
-            setTimeout(() => { this.clickDebounce = false; }, 500);
-        },
-        // --- Olay Dinleyicileri ---
-        initEventListeners() {
-            this.elements.playButton.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.playButton.disabled = true;
-                this.start();
-                setTimeout(() => { this.elements.playButton.disabled = false; }, 1000);
-            }));
-            this.elements.retryButton.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.retryButton.disabled = true;
-                this.reset();
-                setTimeout(() => { this.elements.retryButton.disabled = false; }, 1000);
-            }));
-            this.elements.nextLevelButton.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.nextLevelButton.disabled = true;
-                this.nextLevel();
-                setTimeout(() => { this.elements.nextLevelButton.disabled = false; }, 1000);
-            }));
-            this.elements.themeButton.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.themeModal.classList.remove('hidden');
-            }));
-            this.elements.closeThemeModal.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.themeModal.classList.add('hidden');
-            }));
-            this.elements.settingsButton.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.settingsModal.classList.remove('hidden');
-            }));
-            this.elements.closeSettingsModal.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.settingsModal.classList.add('hidden');
-            }));
-            this.elements['leaderboard-button'].addEventListener('click', () => this.debounceClick(() => {
-                this.elements.leaderboardModal.classList.remove('hidden');
-                this.fetchLeaderboard();
-            }));
-            this.elements.closeLeaderboardModal.addEventListener('click', () => this.debounceClick(() => {
-                this.elements.leaderboardModal.classList.add('hidden');
-            }));
-            this.canvas.addEventListener('click', () => this.debounceClick(() => this.shootPin()));
-            document.body.addEventListener('keydown', (e) => {
-                if (e.code === 'Space' || e.code === 'Enter') {
-                    e.preventDefault();
-                    if (this.state === 'playing') this.shootPin();
+                    this.updateUI();
                 }
-            });
-            window.addEventListener('resize', () => this.resizeCanvas());
-            this.tg.BackButton.onClick(() => {
-                this.tg.close();
-            });
-        },
-        getThemeColor: (varName) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim(),
-    };
-    // --- Parçacık Sınıfı ---
-    class Particle {
-        constructor(x, y, color) {
-            this.x = x;
-            this.y = y;
-            this.color = color;
-            this.size = Math.random() * 5 + 2;
-            this.speedX = Math.random() * 6 - 3;
-            this.speedY = Math.random() * 6 - 3;
-            this.life = 1;
+            }
+            
+            activatePowerUp(type) {
+                if(this.settings.sound) this.soundManager.play('powerUp');
+                this.activePowerUps[type] = CONFIG.POWERUPS[type].duration;
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.beginPath();
+                this.ctx.arc(this.center.x, this.center.y, this.circleRadius, 0, Math.PI * 2);
+                this.ctx.fillStyle = CONFIG.COLORS.CIRCLE;
+                this.ctx.fill();
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.ctx.lineWidth = 1.5;
+                this.ctx.stroke();
+
+                this.powerUpsOnCircle.forEach(p => this.drawPowerUp(p));
+                this.pinsOnCircle.forEach(p => this.drawPin(p.angle));
+                if (this.currentPin) this.drawPin(null, this.currentPin.y, this.currentPin.isFlying);
+                
+                if (this.activePowerUps.shield) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 15, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = CONFIG.COLORS.SHIELD;
+                    this.ctx.lineWidth = 5;
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawPowerUp(powerUp) {
+                const angle = powerUp.angle + this.circle.angle;
+                const x = this.center.x + Math.cos(angle) * this.circleRadius;
+                const y = this.center.y + Math.sin(angle) * this.circleRadius;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 10, 0, Math.PI * 2);
+                this.ctx.fillStyle = CONFIG.COLORS.POWERUP;
+                this.ctx.fill();
+            }
+
+            drawPin(angle, yPos, isFlying = false) {
+                let headX, headY, tailX, tailY;
+                if (angle !== null) {
+                    const totalAngle = angle + this.circle.angle;
+                    headX = this.center.x + Math.cos(totalAngle) * this.circleRadius;
+                    headY = this.center.y + Math.sin(totalAngle) * this.circleRadius;
+                    tailX = this.center.x + Math.cos(totalAngle) * (this.circleRadius + this.pinLength);
+                    tailY = this.center.y + Math.sin(totalAngle) * (this.circleRadius + this.pinLength);
+                } else {
+                    headX = this.center.x; tailX = this.center.x;
+                    headY = yPos - this.pinLength; tailY = yPos;
+                }
+                this.ctx.strokeStyle = isFlying ? CONFIG.COLORS.FLYING_PIN : CONFIG.COLORS.PIN;
+                this.ctx.fillStyle = isFlying ? CONFIG.COLORS.FLYING_PIN : CONFIG.COLORS.PIN;
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath(); this.ctx.moveTo(tailX, tailY); this.ctx.lineTo(headX, headY); this.ctx.stroke();
+                this.ctx.beginPath(); this.ctx.arc(headX, headY, this.pinHeadRadius, 0, Math.PI * 2); this.ctx.fill();
+            }
+
+            updateUI() {
+                this.ui.score.textContent = this.score;
+                this.ui.level.textContent = this.level;
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('googlePinStrikeHighScore', this.highScore);
+                }
+                this.ui.highScore.textContent = this.highScore;
+                this.ui.progress.style.width = `${(this.pinsOnCircle.length / this.maxPinsForLevel) * 100}%`;
+                if (this.state === 'ended') this.ui.finalScore.textContent = `SKOR: ${this.score}`;
+                if (this.state === 'levelup') this.ui.newLevelText.textContent = `SEVİYE ${this.level}`;
+            }
+
+            showScreen(screenName) {
+                Object.values(this.ui.screens).forEach(s => s.classList.add('hidden'));
+                if (screenName && this.ui.screens[screenName]) {
+                    this.ui.screens[screenName].classList.remove('hidden');
+                } else if (!screenName) {
+                    this.ui.screens.ui.classList.remove('hidden');
+                }
+            }
+            
+            showSettings(show) {
+                if (show) {
+                    if (this.state === 'playing') {
+                        this.state = 'paused';
+                        cancelAnimationFrame(this.animationFrameId);
+                    }
+                    this.ui.screens.settings.classList.remove('hidden');
+                } else {
+                    this.ui.screens.settings.classList.add('hidden');
+                    if (this.state === 'paused') {
+                        this.state = 'playing';
+                        this.lastTime = performance.now();
+                        this.animationFrameId = requestAnimationFrame(this.gameLoop);
+                    }
+                }
+            }
+            
+            loadSettings() {
+                const settings = localStorage.getItem('googlePinStrikeSettings');
+                if (settings) {
+                    this.settings = JSON.parse(settings);
+                    document.getElementById('soundToggle').checked = this.settings.sound;
+                    document.getElementById('vibrationToggle').checked = this.settings.vibration;
+                }
+            }
+            
+            toggleSetting(key, value) {
+                this.settings[key] = value;
+                localStorage.setItem('googlePinStrikeSettings', JSON.stringify(this.settings));
+            }
         }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            this.life -= 0.04;
-        }
-        draw(ctx) {
-            ctx.fillStyle = this.color;
-            ctx.globalAlpha = this.life;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = 1;
-        }
-    }
-    // --- OYUNU BAŞLAT ---
-    window.onload = () => {
-        if (!window.Telegram?.WebApp) {
-            console.warn('Telegram Web App API yüklenemedi. Fallback modunda başlatılıyor.');
-        }
-        Game.init();
-    };
+
+        new Game();
+    });
     </script>
 </body>
 </html>
