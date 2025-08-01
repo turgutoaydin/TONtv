@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canlı TV Yayınları</title>
+    <title>Kanal D Canlı Yayın</title>
     <style>
         * {
             margin: 0;
@@ -22,52 +22,23 @@
             text-align: center;
             margin-bottom: 20px;
             padding: 10px;
-            background-color: #0088cc;
+            background-color: #0066a1; /* Kanal D blue */
             color: white;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .channel-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .channel-card {
-            background-color: white;
+        .player-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            margin-bottom: 15px;
+            background-color: #000;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
         }
         
-        .channel-card:hover {
-            transform: translateY(-3px);
-        }
-        
-        .channel-header {
-            padding: 12px 15px;
-            background-color: #0088cc;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .channel-logo {
-            height: 30px;
-            width: auto;
-        }
-        
-        .channel-frame-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            overflow: hidden;
-        }
-        
-        .channel-frame {
+        #live-player {
             position: absolute;
             top: 0;
             left: 0;
@@ -76,16 +47,16 @@
             border: none;
         }
         
-        .channel-controls {
+        .controls {
             display: flex;
-            justify-content: space-between;
-            padding: 10px 15px;
-            background-color: #f0f0f0;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
-        .watch-button {
-            padding: 8px 15px;
-            background-color: #0088cc;
+        .control-button {
+            padding: 10px 20px;
+            background-color: #0066a1;
             color: white;
             border: none;
             border-radius: 5px;
@@ -94,22 +65,11 @@
             transition: background-color 0.2s;
         }
         
-        .watch-button:hover {
-            background-color: #006699;
+        .control-button:hover {
+            background-color: #004d7a;
         }
         
-        .fullscreen-button {
-            padding: 8px 15px;
-            background-color: #555;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        
-        .fullscreen-button:hover {
+        .fullscreen {
             background-color: #333;
         }
         
@@ -121,8 +81,18 @@
             font-size: 12px;
         }
         
-        /* Fullscreen mode styles */
-        .fullscreen {
+        /* Loading indicator */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+        }
+        
+        /* Fullscreen mode */
+        .fullscreen-mode {
             position: fixed;
             top: 0;
             left: 0;
@@ -134,145 +104,124 @@
             flex-direction: column;
         }
         
-        .fullscreen .channel-frame-container {
+        .fullscreen-mode .player-container {
             flex-grow: 1;
             padding-bottom: 0;
+            border-radius: 0;
         }
         
-        .fullscreen .channel-controls {
+        .fullscreen-controls {
             padding: 15px;
-        }
-        
-        .close-fullscreen {
-            background-color: #cc0000 !important;
+            background-color: #111;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Canlı TV Yayınları</h1>
+        <h1>Kanal D Canlı Yayın</h1>
     </div>
     
-    <div class="channel-container">
-        <!-- ATV Channel -->
-        <div class="channel-card" id="atv-card">
-            <div class="channel-header">
-                <h2>ATV</h2>
-                <img src="https://www.atv.com.tr/assets/img/atv-logo.png" alt="ATV Logo" class="channel-logo">
-            </div>
-            <div class="channel-frame-container">
-                <iframe class="channel-frame" id="atv-frame" allowfullscreen></iframe>
-            </div>
-            <div class="channel-controls">
-                <button class="watch-button" onclick="loadChannel('atv')">Yayını Aç</button>
-                <button class="fullscreen-button" onclick="toggleFullscreen('atv')">Tam Ekran</button>
-            </div>
-        </div>
-        
-        <!-- Kanal D Channel -->
-        <div class="channel-card" id="kanald-card">
-            <div class="channel-header">
-                <h2>Kanal D</h2>
-                <img src="https://www.kanald.com.tr/assets/img/kanald-logo.png" alt="Kanal D Logo" class="channel-logo">
-            </div>
-            <div class="channel-frame-container">
-                <iframe class="channel-frame" id="kanald-frame" allowfullscreen></iframe>
-            </div>
-            <div class="channel-controls">
-                <button class="watch-button" onclick="loadChannel('kanald')">Yayını Aç</button>
-                <button class="fullscreen-button" onclick="toggleFullscreen('kanald')">Tam Ekran</button>
-            </div>
-        </div>
-        
-        <!-- Show TV Channel -->
-        <div class="channel-card" id="showtv-card">
-            <div class="channel-header">
-                <h2>Show TV</h2>
-                <img src="https://www.showtv.com.tr/assets/img/showtv-logo.png" alt="Show TV Logo" class="channel-logo">
-            </div>
-            <div class="channel-frame-container">
-                <iframe class="channel-frame" id="showtv-frame" allowfullscreen></iframe>
-            </div>
-            <div class="channel-controls">
-                <button class="watch-button" onclick="loadChannel('showtv')">Yayını Aç</button>
-                <button class="fullscreen-button" onclick="toggleFullscreen('showtv')">Tam Ekran</button>
-            </div>
-        </div>
+    <div class="player-container">
+        <div class="loading">Yayın yükleniyor...</div>
+        <iframe id="live-player" allowfullscreen></iframe>
+    </div>
+    
+    <div class="controls">
+        <button class="control-button" onclick="loadStream()">Yenile</button>
+        <button class="control-button fullscreen" onclick="toggleFullscreen()">Tam Ekran</button>
     </div>
     
     <div class="footer">
-        <p>© 2023 Canlı TV Yayınları | Telegram Mini App</p>
+        <p>© 2023 Kanal D Canlı Yayın | Telegram Mini App</p>
     </div>
     
     <script>
-        // Channel URLs
-        const channels = {
-            atv: 'https://www.atv.com.tr/canli-yayin',
-            kanald: 'https://www.kanald.com.tr/canli-yayin',
-            showtv: 'https://www.showtv.com.tr/canli-yayin'
-        };
-        
         // Initialize Telegram Mini App
         function initTelegramApp() {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.enableClosingConfirmation();
-                Telegram.WebApp.setHeaderColor('#0088cc');
+                Telegram.WebApp.setHeaderColor('#0066a1');
                 Telegram.WebApp.setBackgroundColor('#f5f5f5');
             }
         }
         
-        // Load channel into iframe
-        function loadChannel(channel) {
-            const iframe = document.getElementById(`${channel}-frame`);
-            iframe.src = channels[channel];
+        // Extract just the video player from Kanal D
+        function loadStream() {
+            const iframe = document.getElementById('live-player');
+            const loading = document.querySelector('.loading');
             
-            // Update button text
-            const button = iframe.closest('.channel-card').querySelector('.watch-button');
-            button.textContent = 'Yayın Yükleniyor...';
-            button.disabled = true;
+            // Show loading indicator
+            loading.style.display = 'block';
+            iframe.style.display = 'none';
+            
+            // This URL might need to be updated if Kanal D changes their streaming method
+            // Currently attempts to directly access the video stream
+            iframe.src = 'https://kanald.mediatriple.net/webtv/kanald/kanald.smil/playlist.m3u8';
             
             iframe.onload = function() {
-                button.textContent = 'Yayın Açık';
-                button.style.backgroundColor = '#00aa00';
+                loading.style.display = 'none';
+                iframe.style.display = 'block';
+            };
+            
+            iframe.onerror = function() {
+                loading.textContent = 'Yayın yüklenirken hata oluştu. Lütfen yeniden deneyin.';
+                
+                // Fallback to embedded page if direct stream fails
+                setTimeout(() => {
+                    iframe.src = 'https://www.kanald.com.tr/canli-yayin';
+                    iframe.onload = function() {
+                        loading.style.display = 'none';
+                        iframe.style.display = 'block';
+                    };
+                }, 3000);
             };
         }
         
         // Toggle fullscreen mode
-        function toggleFullscreen(channel) {
-            const card = document.getElementById(`${channel}-card`);
-            const iframe = document.getElementById(`${channel}-frame`);
-            const fullscreenButton = card.querySelector('.fullscreen-button');
+        function toggleFullscreen() {
+            const container = document.querySelector('.player-container');
+            const iframe = document.getElementById('live-player');
             
-            if (!card.classList.contains('fullscreen')) {
-                // Enter fullscreen
-                card.classList.add('fullscreen');
-                document.body.style.overflow = 'hidden';
-                fullscreenButton.textContent = 'Tam Ekrandan Çık';
-                fullscreenButton.classList.add('close-fullscreen');
-                
-                // Force reload iframe to ensure proper sizing
-                const currentSrc = iframe.src;
-                iframe.src = '';
-                setTimeout(() => {
-                    iframe.src = currentSrc;
-                }, 100);
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
             } else {
-                // Exit fullscreen
-                card.classList.remove('fullscreen');
-                document.body.style.overflow = '';
-                fullscreenButton.textContent = 'Tam Ekran';
-                fullscreenButton.classList.remove('close-fullscreen');
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
             }
         }
         
         // Initialize the app when loaded
         window.onload = function() {
             initTelegramApp();
-            
-            // Load first channel by default
-            loadChannel('atv');
+            loadStream();
         };
+        
+        // Handle fullscreen change events
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('msfullscreenchange', handleFullscreenChange);
+        
+        function handleFullscreenChange() {
+            const fullscreenButton = document.querySelector('.fullscreen');
+            if (document.fullscreenElement) {
+                fullscreenButton.textContent = 'Tam Ekrandan Çık';
+            } else {
+                fullscreenButton.textContent = 'Tam Ekran';
+            }
+        }
     </script>
 </body>
 </html>
