@@ -2,226 +2,471 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanal D Canlı Yayın</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pin Master v1.2</title>
+    
+    <!-- Kütüphaneler -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --bg-color: #111827; --text-color: #f9fafb; --text-muted-color: #9ca3af;
+            --primary-color: #22d3ee; --accent-color: #f59e0b; --success-color: #4ade80;
+            --error-color: #f87171; --modal-bg-color: rgba(0, 0, 0, 0.8);
         }
-        
         body {
-            background-color: #f5f5f5;
-            color: #333;
-            padding: 10px;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #0066a1; /* Kanal D blue */
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .player-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            margin-bottom: 15px;
-            background-color: #000;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        #live-player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .control-button {
-            padding: 10px 20px;
-            background-color: #0066a1;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        
-        .control-button:hover {
-            background-color: #004d7a;
-        }
-        
-        .fullscreen {
-            background-color: #333;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            color: #666;
-            font-size: 12px;
-        }
-        
-        /* Loading indicator */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
-        }
-        
-        /* Fullscreen mode */
-        .fullscreen-mode {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .fullscreen-mode .player-container {
-            flex-grow: 1;
-            padding-bottom: 0;
-            border-radius: 0;
-        }
-        
-        .fullscreen-controls {
-            padding: 15px;
-            background-color: #111;
-            text-align: center;
+        canvas { display: block; background-color: var(--bg-color); transition: background-color 0.3s ease; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        .fade-out { animation: fadeOut 0.5s ease-in-out forwards; }
+        .zoom-in { animation: zoomIn 0.3s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+          10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); }
+          30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); }
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1>Kanal D Canlı Yayın</h1>
-    </div>
+<body class="flex flex-col items-center justify-between h-screen p-4">
+
+    <!-- Üst Bilgi -->
+    <header class="w-full flex justify-between items-center p-2 bg-white/5 rounded-xl z-10">
+        <div class="flex items-center space-x-3">
+             <div id="score-display" class="text-2xl font-bold">0</div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span id="user-info" class="text-right text-xs text-muted-color"></span>
+            <button id="theme-button" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Oyun Alanı -->
+    <main class="absolute inset-0 flex items-center justify-center">
+        <canvas id="gameCanvas"></canvas>
+    </main>
     
-    <div class="player-container">
-        <div class="loading">Yayın yükleniyor...</div>
-        <iframe id="live-player" allowfullscreen></iframe>
+    <!-- Başlangıç ve Geri Sayım Ekranı -->
+    <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center" style="background-color: var(--bg-color);">
+        <div id="start-screen" class="text-center fade-in">
+            <h1 class="text-6xl font-black tracking-tighter">Pin Master</h1>
+            <p class="text-muted-color mb-8">v1.2</p>
+            <button id="play-button" class="w-64 py-4 px-6 font-bold text-2xl rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--primary-color); color: var(--bg-color);">
+                Oyna
+            </button>
+        </div>
+        <div id="countdown-display" class="hidden text-9xl font-black"></div>
     </div>
-    
-    <div class="controls">
-        <button class="control-button" onclick="loadStream()">Yenile</button>
-        <button class="control-button fullscreen" onclick="toggleFullscreen()">Tam Ekran</button>
+
+
+    <!-- Alt Bilgi -->
+    <footer class="w-full flex flex-col items-center h-16 z-10 justify-end">
+        <div id="pins-left-display" class="text-2xl font-bold tracking-wider"></div>
+    </footer>
+
+    <!-- Modallar -->
+    <div id="modal-container" class="z-20">
+        <div id="gameOverModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
+            <h2 class="text-6xl font-extrabold mb-4" style="color: var(--error-color);">Kaybettin!</h2>
+            <p id="gameOverScore" class="text-xl text-muted-color mb-2">Skor: 0</p>
+            <p id="gameOverLevel" class="text-lg text-muted-color mb-8">Seviye: 1</p>
+            <button id="retryButton" class="w-full max-w-xs py-3 px-6 font-bold rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--accent-color); color: var(--bg-color);">Tekrar Dene</button>
+        </div>
+        <div id="levelCompleteModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
+            <h2 class="text-6xl font-extrabold mb-4" style="color: var(--success-color);">Harika!</h2>
+            <p id="levelCompleteScore" class="text-xl text-muted-color mb-8"></p>
+            <button id="nextLevelButton" class="w-full max-w-xs py-3 px-6 font-bold rounded-xl shadow-lg transition-transform transform hover:scale-105" style="background-color: var(--primary-color); color: var(--bg-color);">Sıradaki Seviye</button>
+        </div>
+        <div id="themeModal" class="hidden absolute inset-0 flex flex-col items-center justify-center p-8 fade-in" style="background-color: var(--modal-bg-color);">
+            <h2 class="text-3xl font-bold mb-8">Tema Seç</h2>
+            <div id="theme-options" class="grid grid-cols-2 gap-4"></div>
+            <button id="closeThemeModal" class="mt-8 text-sm text-muted-color">Kapat</button>
+        </div>
     </div>
-    
-    <div class="footer">
-        <p>© 2023 Kanal D Canlı Yayın | Telegram Mini App</p>
-    </div>
-    
+
     <script>
-        // Initialize Telegram Mini App
-        function initTelegramApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.expand();
-                Telegram.WebApp.enableClosingConfirmation();
-                Telegram.WebApp.setHeaderColor('#0066a1');
-                Telegram.WebApp.setBackgroundColor('#f5f5f5');
-            }
-        }
+    // --- OYUN MOTORU ---
+    const Game = {
+        // --- Değişkenler ve Ayarlar ---
+        state: 'loading', // loading, ready, countdown, playing, paused, over
+        score: 0,
+        level: 1,
+        config: {
+            rotationSpeed: 0.01,
+            pinSpeed: 25,
+            basePins: 7,
+            circleRadius: 80,
+            pinLength: 45,
+            pinHeadRadius: 7,
+        },
+        elements: {},
+        sfx: {},
+        canvas: null,
+        ctx: null,
+        center: {},
+        circle: null,
+        pins: [],
+        waitingPins: [],
+        staticPins: [],
+        particles: [],
+        animationFrameId: null,
+
+        // --- Başlatma Fonksiyonu ---
+        init() {
+            this.tg = window.Telegram.WebApp;
+            this.tg.expand();
+
+            // DOM elementlerini ata
+            const ids = ['score-display', 'user-info', 'theme-button', 'gameCanvas', 'overlay', 'start-screen', 'play-button', 'countdown-display', 'pins-left-display', 'gameOverModal', 'gameOverScore', 'gameOverLevel', 'retryButton', 'levelCompleteModal', 'levelCompleteScore', 'nextLevelButton', 'themeModal', 'theme-options', 'closeThemeModal'];
+            ids.forEach(id => this.elements[id] = document.getElementById(id));
+            
+            this.canvas = this.elements.gameCanvas;
+            this.ctx = this.canvas.getContext('2d');
+
+            this.initSfx();
+            this.initThemes();
+            this.initUser();
+            this.initEventListeners();
+            
+            this.resizeCanvas();
+            this.setupLevel();
+            this.state = 'ready';
+            console.log("Oyun hazır. Başlatılmayı bekliyor.");
+        },
+
+        // --- Ses Efektleri ---
+        initSfx() {
+            this.sfx.shoot = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
+            this.sfx.hit = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
+            this.sfx.error = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination();
+            this.sfx.levelUp = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmtriangle' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
+            this.sfx.uiClick = new Tone.MembraneSynth().toDestination();
+        },
         
-        // Extract just the video player from Kanal D
-        function loadStream() {
-            const iframe = document.getElementById('live-player');
-            const loading = document.querySelector('.loading');
+        // --- Oyun Akışı ---
+        start() {
+            if (this.state !== 'ready') return;
+            this.sfx.uiClick.triggerAttackRelease("C2", "8n");
             
-            // Show loading indicator
-            loading.style.display = 'block';
-            iframe.style.display = 'none';
-            
-            // This URL might need to be updated if Kanal D changes their streaming method
-            // Currently attempts to directly access the video stream
-            iframe.src = 'https://kanald.mediatriple.net/webtv/kanald/kanald.smil/playlist.m3u8';
-            
-            iframe.onload = function() {
-                loading.style.display = 'none';
-                iframe.style.display = 'block';
-            };
-            
-            iframe.onerror = function() {
-                loading.textContent = 'Yayın yüklenirken hata oluştu. Lütfen yeniden deneyin.';
+            this.elements['start-screen'].classList.replace('fade-in', 'fade-out');
+            this.state = 'countdown';
+            let count = 3;
+
+            const countdownInterval = setInterval(() => {
+                if (count > 0) {
+                    this.elements.countdownDisplay.textContent = count;
+                    this.elements.countdownDisplay.classList.remove('hidden');
+                    this.elements.countdownDisplay.classList.add('zoom-in');
+                    this.sfx.hit.triggerAttackRelease(count === 1 ? "C5" : "C4", "8n");
+                    setTimeout(() => this.elements.countdownDisplay.classList.remove('zoom-in'), 300);
+                    count--;
+                } else {
+                    clearInterval(countdownInterval);
+                    this.elements.overlay.classList.add('hidden');
+                    this.state = 'playing';
+                    this.gameLoop();
+                }
+            }, 800);
+        },
+        
+        gameLoop() {
+            if (this.state !== 'playing') return;
+            this.update();
+            this.draw();
+            this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+        },
+        
+        update() {
+            this.circle.angle += this.config.rotationSpeed;
+            if (this.waitingPins.length > 0) {
+                const currentPin = this.waitingPins[0];
+                if (currentPin.isFlying) {
+                    currentPin.y -= this.config.pinSpeed;
+                    this.checkCollision(currentPin);
+                }
+            }
+            this.particles.forEach((p, i) => {
+                p.update();
+                if (p.life <= 0) this.particles.splice(i, 1);
+            });
+        },
+
+        draw() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            // Circle
+            this.ctx.fillStyle = this.getThemeColor('--text-color');
+            this.ctx.beginPath();
+            this.ctx.arc(this.center.x, this.center.y, this.config.circleRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+            // Pins
+            [...this.pins, ...this.staticPins].forEach(p => this.drawPin(p));
+            // Waiting Pins
+            if (this.waitingPins.length > 0) {
+                this.drawPin(this.waitingPins[0]);
+            }
+            // Particles
+            this.particles.forEach(p => p.draw(this.ctx));
+        },
+        
+        // --- Olaylar ve Mekanizmalar ---
+        shootPin() {
+            if (this.state !== 'playing' || this.waitingPins.length === 0) return;
+            const currentPin = this.waitingPins[0];
+            if (!currentPin.isFlying) {
+                currentPin.isFlying = true;
+                this.sfx.shoot.triggerAttackRelease("G3", "8n");
+                this.tg.HapticFeedback.impactOccurred('light');
+            }
+        },
+
+        checkCollision(flyingPin) {
+            const hitDistance = this.center.y + this.config.circleRadius;
+            if (flyingPin.y <= hitDistance) {
+                flyingPin.isFlying = false;
+                const newPinAngle = -Math.PI / 2 - this.circle.angle;
+                const collisionThreshold = Math.atan2(this.config.pinHeadRadius * 2.2, this.config.circleRadius);
                 
-                // Fallback to embedded page if direct stream fails
-                setTimeout(() => {
-                    iframe.src = 'https://www.kanald.com.tr/canli-yayin';
-                    iframe.onload = function() {
-                        loading.style.display = 'none';
-                        iframe.style.display = 'block';
-                    };
-                }, 3000);
-            };
-        }
-        
-        // Toggle fullscreen mode
-        function toggleFullscreen() {
-            const container = document.querySelector('.player-container');
-            const iframe = document.getElementById('live-player');
+                const allPins = [...this.pins, ...this.staticPins];
+                for (const pin of allPins) {
+                    const pinAngle = pin.isStatic ? pin.angle : pin.angle + this.circle.angle;
+                    const newAngleGlobal = newPinAngle + this.circle.angle;
+                    if (Math.abs(this.normalizeAngle(pinAngle) - this.normalizeAngle(newAngleGlobal)) < collisionThreshold) {
+                        this.gameOver(flyingPin, pin);
+                        return;
+                    }
+                }
+                
+                // Başarılı Vuruş
+                this.sfx.hit.triggerAttackRelease("C5", "8n");
+                this.createParticles(this.center.x, hitDistance);
+                this.pins.push({ angle: newPinAngle, isStatic: false, color: this.getThemeColor('--text-color') });
+                this.waitingPins.shift();
+                this.updateScore(10 * this.level);
+                this.elements.pinsLeftDisplay.textContent = `Kalan: ${this.waitingPins.length}`;
+
+                if (this.waitingPins.length === 0) { this.levelComplete(); }
+            }
+        },
+
+        gameOver(collidingPin, hitPin) {
+            this.state = 'over';
+            cancelAnimationFrame(this.animationFrameId);
+            this.tg.HapticFeedback.notificationOccurred('error');
+            this.sfx.error.triggerAttackRelease("F#2", "4n");
+
+            collidingPin.color = this.getThemeColor('--error-color');
+            hitPin.color = this.getThemeColor('--error-color');
+            this.draw(); // Son durumu çiz
+            this.canvas.classList.add('shake');
+
+            setTimeout(() => {
+                this.elements.gameOverScore.textContent = `Skor: ${this.score}`;
+                this.elements.gameOverLevel.textContent = `Seviye: ${this.level}`;
+                this.elements.gameOverModal.classList.remove('hidden');
+                this.canvas.classList.remove('shake');
+            }, 800);
+        },
+
+        levelComplete() {
+            this.state = 'over';
+            cancelAnimationFrame(this.animationFrameId);
+            this.tg.HapticFeedback.notificationOccurred('success');
+            this.sfx.levelUp.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
             
-            if (!document.fullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+            this.updateScore(100 * this.level);
+            this.elements.levelCompleteScore.textContent = `Skor: ${this.score}`;
+            this.elements.levelCompleteModal.classList.remove('hidden');
+        },
+        
+        nextLevel() {
+            this.level++;
+            this.config.rotationSpeed *= 1.08;
+            if (this.level % 4 === 0) this.config.rotationSpeed *= -1;
+            this.elements.levelCompleteModal.classList.add('hidden');
+            this.setupLevel();
+            this.state = 'ready';
+            this.start();
+        },
+        
+        reset() {
+            this.elements.gameOverModal.classList.add('hidden');
+            this.level = 1;
+            this.score = 0;
+            this.updateScore(0);
+            this.config.rotationSpeed = 0.01;
+            this.setupLevel();
+            this.state = 'ready';
+            this.start();
+        },
+
+        // --- Kurulum ve Yardımcılar ---
+        setupLevel() {
+            this.circle = { angle: 0 };
+            this.pins = [];
+            this.waitingPins = [];
+            this.staticPins = [];
+            
+            if (this.level > 2) {
+                const staticPinCount = Math.floor(this.level / 2) - 1;
+                for(let i=0; i<staticPinCount; i++) {
+                    this.staticPins.push({ angle: Math.random() * Math.PI * 2, isStatic: true, color: this.getThemeColor('--text-muted-color') });
                 }
             }
-        }
+            
+            const totalPins = this.config.basePins + Math.floor(this.level / 2);
+            for (let i = 0; i < totalPins; i++) { this.waitingPins.push({ y: this.canvas.height - this.config.pinHeadRadius * 8, isFlying: false, color: this.getThemeColor('--text-color') }); }
+            
+            this.elements.pinsLeftDisplay.textContent = `Kalan: ${this.waitingPins.length}`;
+            this.draw();
+        },
         
-        // Initialize the app when loaded
-        window.onload = function() {
-            initTelegramApp();
-            loadStream();
+        drawPin(pin) {
+            this.ctx.fillStyle = pin.color;
+            this.ctx.strokeStyle = pin.color;
+            this.ctx.lineWidth = 3;
+
+            if (pin.angle !== undefined) {
+                const currentAngle = pin.angle + (pin.isStatic ? 0 : this.circle.angle);
+                const startX = this.center.x + Math.cos(currentAngle) * this.config.circleRadius;
+                const startY = this.center.y + Math.sin(currentAngle) * this.config.circleRadius;
+                const endX = this.center.x + Math.cos(currentAngle) * (this.config.circleRadius + this.config.pinLength);
+                const endY = this.center.y + Math.sin(currentAngle) * (this.config.circleRadius + this.config.pinLength);
+                
+                this.ctx.beginPath(); this.ctx.moveTo(startX, startY); this.ctx.lineTo(endX, endY); this.ctx.stroke();
+                this.ctx.beginPath(); this.ctx.arc(endX, endY, this.config.pinHeadRadius, 0, Math.PI * 2); this.ctx.fill();
+            } else {
+                this.ctx.beginPath(); this.ctx.arc(this.center.x, pin.y, this.config.pinHeadRadius, 0, Math.PI * 2); this.ctx.fill();
+            }
+        },
+
+        createParticles(x, y) {
+            for (let i = 0; i < 20; i++) {
+                this.particles.push(new Particle(x, y, this.getThemeColor('--primary-color')));
+            }
+        },
+        
+        updateScore(points) {
+            this.score += points;
+            this.elements.scoreDisplay.textContent = this.score;
+        },
+
+        resizeCanvas() {
+            const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+            this.canvas.width = size;
+            this.canvas.height = size;
+            this.center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
+            this.config.circleRadius = size * 0.2;
+            this.config.pinLength = size * 0.12;
+            this.config.pinHeadRadius = size * 0.02;
+            this.draw();
+        },
+        
+        normalizeAngle: (angle) => (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI),
+
+        // --- Tema ve Kullanıcı ---
+        initThemes() { /* Önceki versiyondaki gibi, değişiklik yok */ },
+        initUser() { /* Önceki versiyondaki gibi, değişiklik yok */ },
+        getThemeColor: (varName) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim(),
+
+        // --- Olay Dinleyicileri ---
+        initEventListeners() {
+            this.elements.playButton.onclick = () => this.start();
+            this.elements.retryButton.onclick = () => this.reset();
+            this.elements.nextLevelButton.onclick = () => this.nextLevel();
+            this.canvas.onclick = () => this.shootPin();
+            window.onresize = () => this.resizeCanvas();
+            // Tema butonları için önceki versiyondaki gibi...
+        },
+    };
+
+    // --- Parçacık Sınıfı ---
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.size = Math.random() * 5 + 2;
+            this.speedX = Math.random() * 6 - 3;
+            this.speedY = Math.random() * 6 - 3;
+            this.life = 1;
+        }
+        update() {
+            this.x += this.speedX; this.y += this.speedY;
+            this.life -= 0.04;
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.life;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+    }
+    
+    // --- OYUNU BAŞLAT ---
+    window.onload = () => Game.init();
+    // Not: initThemes ve initUser içindeki kodlar, okunabilirlik için buraya kopyalanmadı,
+    // ancak önceki versiyondaki gibi çalıştıklarını varsayabilirsiniz. Game.init() içinde çağrılıyorlar.
+    Game.initThemes = function() {
+        const themes = {
+            dark: { name: 'Karanlık', colors: { '--bg-color': '#111827', '--text-color': '#f9fafb', '--text-muted-color': '#9ca3af', '--primary-color': '#22d3ee', '--accent-color': '#f59e0b', '--success-color': '#4ade80', '--error-color': '#f87171', '--modal-bg-color': 'rgba(0,0,0,0.8)' } },
+            light: { name: 'Aydınlık', colors: { '--bg-color': '#f3f4f6', '--text-color': '#1f2937', '--text-muted-color': '#4b5563', '--primary-color': '#0891b2', '--accent-color': '#f97316', '--success-color': '#22c55e', '--error-color': '#ef4444', '--modal-bg-color': 'rgba(255,255,255,0.8)' } },
         };
-        
-        // Handle fullscreen change events
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
-        
-        function handleFullscreenChange() {
-            const fullscreenButton = document.querySelector('.fullscreen');
-            if (document.fullscreenElement) {
-                fullscreenButton.textContent = 'Tam Ekrandan Çık';
-            } else {
-                fullscreenButton.textContent = 'Tam Ekran';
-            }
+        Object.keys(themes).forEach(key => {
+            const theme = themes[key];
+            const button = document.createElement('button');
+            button.className = 'p-4 rounded-lg text-left';
+            button.style.backgroundColor = theme.colors['--bg-color'];
+            button.style.color = theme.colors['--text-color'];
+            button.style.border = `2px solid ${theme.colors['--primary-color']}`;
+            button.textContent = theme.name;
+            button.onclick = () => {
+                const themeColors = themes[key].colors;
+                for (const [k, v] of Object.entries(themeColors)) { document.documentElement.style.setProperty(k, v); }
+                localStorage.setItem('pinMasterTheme', key);
+                this.draw();
+                this.elements.themeModal.classList.add('hidden');
+            };
+            this.elements.themeOptions.appendChild(button);
+        });
+        const savedTheme = localStorage.getItem('pinMasterTheme') || 'dark';
+        const themeColors = themes[savedTheme].colors;
+        for (const [k, v] of Object.entries(themeColors)) { document.documentElement.style.setProperty(k, v); }
+    };
+    Game.initUser = function() {
+        if (this.tg.initDataUnsafe?.user) {
+            const user = this.tg.initDataUnsafe.user;
+            this.elements.userInfo.textContent = `@${user.username || user.first_name}`;
         }
+    };
+    Game.initEventListeners = function() {
+        this.elements.playButton.onclick = () => this.start();
+        this.elements.retryButton.onclick = () => this.reset();
+        this.elements.nextLevelButton.onclick = () => this.nextLevel();
+        this.elements.themeButton.onclick = () => this.elements.themeModal.classList.remove('hidden');
+        this.elements.closeThemeModal.onclick = () => this.elements.themeModal.classList.add('hidden');
+        this.canvas.onclick = () => this.shootPin();
+        document.body.onkeydown = (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                if (this.state === 'playing') this.shootPin();
+            }
+        };
+        window.onresize = () => this.resizeCanvas();
+    };
+
     </script>
 </body>
 </html>
