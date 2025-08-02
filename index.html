@@ -1,544 +1,709 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>aa Game</title>
-    <!-- Google Fonts: Roboto -->
+    <title>AA Game by @liraKurdi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Tone.js (Dahili Ses Üretimi için) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --primary-text: #e8eaed;
-            --secondary-text: #9aa0a6;
-            --background: #202124;
-            --surface: #303134;
-            --accent: #8ab4f8; /* Google's blue accent */
-            --power-up: #fdd663; /* Google's yellow accent */
+            --primary: #4285F4; /* Google Blue */
+            --secondary: #757575; /* Google Grey */
+            --accent: #EA4335; /* Google Red */
+            --background: #F5F5F5; /* Light Gray Background */
+            --surface: #FFFFFF; /* Card and Panel background */
+            --text: #202124; /* Dark Gray Text */
+            --text-secondary: #5f6368;
+            --danger: #D93025;
+            --success: #1E8E3E;
+            --safe-zone: rgba(30, 142, 62, 0.15);
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-strong: rgba(0, 0, 0, 0.15);
         }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: var(--background);
-            font-family: 'Roboto', 'Arial', sans-serif;
-            overflow: hidden;
             touch-action: manipulation;
-            color: var(--primary-text);
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            overflow: hidden;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.5s ease;
         }
-        
-        body.focus-mode {
-            background-color: #171717;
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-
         #gameCanvas {
             display: block;
             border-radius: 50%;
             max-width: 95vw;
             max-height: 95vw;
-            transition: transform 0.2s;
-            z-index: 2;
+            box-shadow: 0 4px 12px var(--shadow);
+            touch-action: none;
         }
-
-        #ui {
-            position: fixed;
-            top: 15px;
+        #uiOverlay {
+            position: absolute;
+            top: 2vh;
             width: 90%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 10;
-            background: rgba(48, 49, 52, 0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            padding: 10px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        #stats {
+            max-width: 500px;
             display: flex;
             justify-content: space-between;
-            width: 100%;
-            gap: 15px;
+            flex-wrap: wrap;
+            z-index: 10;
+            gap: 0.5rem;
         }
-
-        .stat {
-            text-align: center;
-            flex: 1;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--secondary-text);
-            margin-bottom: 2px;
-            text-transform: uppercase;
-        }
-
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary-text);
-        }
-
-        #progressBar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        #progress {
-            height: 100%;
-            background: var(--accent);
-            transition: width 0.3s ease;
-            border-radius: 3px;
-        }
-
-        .screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(32, 33, 36, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 30;
-            transition: opacity 0.4s, transform 0.4s;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .screen.hidden {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-        }
-
-        .screen-content {
-            max-width: 400px;
-            width: 90%;
+        .uiPanel {
             background: var(--surface);
-            border-radius: 16px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        h1 {
-            font-size: clamp(2rem, 5vw, 2.5rem);
-            margin-bottom: 16px;
-            color: var(--primary-text);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 4px var(--shadow);
+            display: flex;
+            align-items: center;
+            font-size: min(3vw, 0.8rem);
+            color: var(--text-secondary);
             font-weight: 500;
         }
-        
-        h2 {
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            margin-bottom: 25px;
-            color: var(--secondary-text);
-            font-weight: 400;
+        .uiValue {
+            font-weight: 700;
+            font-size: min(4vw, 1.1rem);
+            margin-left: 0.5rem;
+            color: var(--text);
         }
-
-        .button-container {
+        #progressContainer {
+            position: absolute;
+            bottom: 4vh;
+            width: 80%;
+            max-width: 400px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #progressBar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            margin-top: 24px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(245, 245, 245, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-
-        button {
-            background: var(--accent);
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .screenContent {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 8px var(--shadow), 0 8px 24px var(--shadow-strong);
+        }
+        h1 {
+            font-size: min(8vw, 2rem);
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+        h2 {
+            font-size: min(5vw, 1.1rem);
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+        .buttonGroup {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn {
             border: none;
-            color: var(--background);
-            padding: 14px 30px;
+            padding: 1rem 2rem;
             border-radius: 50px;
-            font-size: 1rem;
             font-weight: 700;
+            font-size: min(4vw, 1rem);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.08rem;
+            position: relative;
+            overflow: hidden;
         }
-
-        button:hover {
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 5px rgba(66, 133, 244, 0.4);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+        .btn:hover, .btn:active {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(138, 180, 248, 0.2);
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.5);
         }
-
-        button.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--accent);
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
         }
-        
-        #settingsPanel { z-index: 40; }
-        .settings-row {
+        .btn:active::after {
+            width: 150px;
+            height: 150px;
+        }
+        .powerUpIndicator {
+            position: absolute;
+            bottom: 8vh;
+            display: flex;
+            gap: 0.8rem;
+        }
+        .powerUpBadge {
+            width: min(10vw, 40px);
+            height: min(10vw, 40px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            box-shadow: 0 2px 4px var(--shadow);
+            font-weight: bold;
+            font-size: min(4vw, 1rem);
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        .powerUpBadge.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .settingsPanel {
+            position: absolute;
+            bottom: 2vh;
+            right: 3vw;
+            width: min(10vw, 44px);
+            height: min(10vw, 44px);
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            font-size: min(5vw, 1.4rem);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        #settingsScreen .settingsContent {
+            max-width: 350px;
+        }
+        .settingsRow {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1.2rem;
+            font-size: min(4vw, 1rem);
         }
-        .toggle-switch {
-            position: relative; display: inline-block;
-            width: 52px; height: 28px;
+        .toggleSwitch {
+            position: relative;
+            display: inline-block;
+            width: min(12vw, 50px);
+            height: min(6vw, 26px);
         }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.1);
-            transition: .4s; border-radius: 28px;
+        .toggleSwitch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
-        .toggle-slider:before {
-            position: absolute; content: "";
-            height: 20px; width: 20px;
-            left: 4px; bottom: 4px;
-            background-color: var(--primary-text);
-            transition: .4s; border-radius: 50%;
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
         }
-        input:checked + .toggle-slider { background-color: var(--accent); }
-        input:checked + .toggle-slider:before { transform: translateX(24px); }
-        .settings-close {
-            position: absolute; top: 15px; right: 15px;
-            width: 30px; height: 30px;
-            background: rgba(255,255,255,0.1);
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: min(5vw, 20px);
+            width: min(5vw, 20px);
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 1.2rem;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(min(6vw, 24px));
+        }
+        .credit {
+            position: absolute;
+            bottom: 1vh;
+            right: 1vw;
+            font-size: min(3vw, 0.8rem);
+            color: var(--text-secondary);
+            z-index: 10;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 0.4s ease;
+        }
+        @media (max-width: 500px) {
+            h1 {
+                font-size: min(7vw, 1.8rem);
+            }
+            h2 {
+                font-size: min(4.5vw, 1rem);
+            }
+            .btn {
+                padding: 0.8rem 1.5rem;
+                font-size: min(4vw, 0.9rem);
+            }
+            .uiPanel {
+                padding: 0.4rem 0.8rem;
+            }
+            .uiValue {
+                font-size: min(3.5vw, 1rem);
+            }
+            #progressContainer {
+                bottom: 5vh;
+                height: 5px;
+            }
+            .powerUpIndicator {
+                bottom: 10vh;
+            }
+            .settingsPanel {
+                bottom: 2vh;
+                right: 3vw;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="ui" class="hidden">
-        <div id="stats">
-            <div class="stat">
-                <div class="stat-label">Score</div>
-                <div class="stat-value" id="score">0</div>
+    <div id="gameContainer">
+        <div id="uiOverlay">
+            <div class="uiPanel">
+                <span>SCORE</span>
+                <span id="scoreValue" class="uiValue">0</span>
             </div>
-            <div class="stat">
-                <div class="stat-label">LvL</div>
-                <div class="stat-value" id="level">1</div>
+            <div class="uiPanel">
+                <span>LEVEL</span>
+                <span id="levelValue" class="uiValue">1</span>
             </div>
-            <div class="stat">
-                <div class="stat-label">Record</div>
-                <div class="stat-value" id="highScore">0</div>
+            <div class="uiPanel">
+                <span>PINS</span>
+                <span id="pinsRemaining" class="uiValue">0</span>
             </div>
-        </div>
-        <div id="progressBar"><div id="progress"></div></div>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="startScreen" class="screen">
-        <div class="screen-content">
-            <h1>aa Game</h1>
-            <div class="button-container">
-                <button id="startButton">Start</button>
-                <button id="settingsBtn" class="secondary">Setting</button>
+            <div class="uiPanel">
+                <span>HIGH SCORE</span>
+                <span id="highScoreValue" class="uiValue">0</span>
             </div>
         </div>
-    </div>
-
-    <div id="gameOverScreen" class="screen hidden">
-        <div class="screen-content">
-            <h1>Game Over</h1>
-            <h2 id="finalScore">Score: 0</h2>
-            <div class="button-container">
-                <button id="restartButton">Play Again</button>
-                <button id="menuButton" class="secondary">Homepage</button>
+        <canvas id="gameCanvas"></canvas>
+        <div id="progressContainer">
+            <div id="progressBar"></div>
+        </div>
+        <div class="powerUpIndicator" id="powerUpIndicator"></div>
+        <div class="settingsPanel" id="settingsButton">
+            ⚙️
+        </div>
+        <div class="credit">Version 1.10001 powered by @LiraKurdiBot</div>
+        <!-- Screens -->
+        <div class="screen" id="startScreen">
+            <div class="screenContent">
+                <h1>AA GAME</h1>
+                <h2>Pin the rotating circle without collisions!</h2>
+                <div class="buttonGroup">
+                    <button class="btn btn-primary" id="startButton">START</button>
+                    <button class="btn btn-secondary" id="tutorialButton">HOW TO PLAY</button>
+                </div>
+            </div>
+        </div>
+        <div class="screen" id="gameOverScreen">
+            <div class="screenContent">
+                <h1>GAME OVER</h1>
+                <h2 id="finalScoreText">Score: 0</h2>
+                <h2 id="highScoreText">High Score: 0</h2>
+                <h2 id="pinsPlacedText">Pins Placed: 0</h2>
+                <div class="buttonGroup">
+                    <button class="btn btn-primary" id="restartButton">TRY AGAIN</button>
+                    <button class="btn btn-secondary" id="menuButton">MENU</button>
+                </div>
+            </div>
+        </div>
+        <div class="screen" id="levelUpScreen">
+            <div class="screenContent">
+                <h1>LEVEL UP!</h1>
+                <h2 id="levelUpText">Level 2</h2>
+                <div class="buttonGroup">
+                    <button class="btn btn-primary" id="continueButton">CONTINUE</button>
+                </div>
+            </div>
+        </div>
+        <div class="screen" id="settingsScreen">
+            <div class="screenContent settingsContent">
+                <h1>SETTINGS</h1>
+                <div class="settingsRow">
+                    <span>Sound Effects</span>
+                    <label class="toggleSwitch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settingsRow">
+                    <span>Vibration</span>
+                    <label class="toggleSwitch">
+                        <input type="checkbox" id="vibrationToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="buttonGroup" style="margin-top: 1.8rem;">
+                    <button class="btn btn-primary" id="closeSettingsButton">CLOSE</button>
+                </div>
+            </div>
+        </div>
+        <div class="screen" id="tutorialScreen">
+            <div class="screenContent">
+                <h1>HOW TO PLAY</h1>
+                <div style="text-align: left; margin-bottom: 1.5rem;">
+                    <p style="margin-bottom: 0.8rem;">1️⃣ Tap or click to shoot pins onto the circle.</p>
+                    <p style="margin-bottom: 0.8rem;">2️⃣ Game ends only if pins collide.</p>
+                    <p style="margin-bottom: 0.8rem;">3️⃣ Place all pins to level up.</p>
+                    <p>4️⃣ Grab power-ups: slow, shield, or score multiplier.</p>
+                </div>
+                <div class="buttonGroup">
+                    <button class="btn btn-primary" id="backToMenuButton">GOT IT</button>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div id="levelUpScreen" class="screen hidden">
-        <div class="screen-content">
-            <h1>Next LvL</h1>
-            <h2 id="newLevelText">LvL 2</h2>
-            <div class="button-container">
-                <button id="continueButton">Continue</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="settingsPanel" class="screen hidden">
-        <div class="screen-content">
-            <h2>Ayarlar</h2>
-            <div class="settings-row">
-                <span>Sound Effect</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="soundToggle" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="settings-row">
-                <span>Titreşim</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="vibrationToggle" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="settings-close">✕</div>
-        </div>
-    </div>
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        
         const CONFIG = {
-            PIN_LENGTH_RATIO: 0.1,
-            PIN_HEAD_RADIUS_RATIO: 0.015,
-            PIN_FLY_SPEED: 20,
             COLORS: {
-                PIN: 'rgba(232, 234, 237, 0.8)',
-                FLYING_PIN: 'rgba(138, 180, 248, 1)',
-                CIRCLE: 'rgba(255, 255, 255, 0.05)',
-                POWERUP: '#fdd663',
-                SHIELD: 'rgba(138, 180, 248, 0.3)',
+                CIRCLE: 'rgba(32, 33, 36, 0.05)',
+                PIN: '#202124',
+                FLYING_PIN: '#4285F4',
+                POWER_UP: '#EA4335',
+                SHIELD: 'rgba(66, 133, 244, 0.3)',
+                SUCCESS: '#1E8E3E',
+                SAFE_ZONE: 'rgba(30, 142, 62, 0.15)',
+                DANGER: '#D93025'
             },
-            LEVELS: [
-                { pins: 5, speed: 0.007, powerUpChance: 0.1 },
-                { pins: 6, speed: 0.008, powerUpChance: 0.15 },
-                { pins: 7, speed: 0.009, powerUpChance: 0.2, reverse: true },
-                { pins: 8, speed: 0.011, powerUpChance: 0.25 },
-                { pins: 9, speed: 0.013, powerUpChance: 0.3, reverse: true },
-                { pins: 10, speed: 0.015, powerUpChance: 0.35 },
-                { pins: 12, speed: 0.017, powerUpChance: 0.4, reverse: true },
-            ],
-            POWERUPS: {
-                slow: { duration: 300 },
-                shield: { duration: 1 }, // 1 vuruşluk
-                score: { duration: 300 },
+            PHYSICS: {
+                PIN_LENGTH_RATIO: 0.12,
+                PIN_HEAD_RADIUS_RATIO: 0.018,
+                PIN_FLY_SPEED: 18,
+                CIRCLE_SPEED_BASE: 0.004,
+                CIRCLE_SPEED_INCREMENT: 0.0006,
+                MAX_CIRCLE_SPEED: 0.018,
+                COLLISION_THRESHOLD: 0.1
             },
-            FOCUS_MODE_LEVEL: 4,
+            GAME: {
+                INITIAL_PINS: 8,
+                PIN_INCREMENT: 3,
+                MAX_PINS: 25,
+                SCORE_PER_PIN: 10,
+                BONUS_MULTIPLIER: 2.5,
+                POWER_UP_CHANCE: 0.25,
+                POWER_UP_CHANCE_INCREMENT: 0.04,
+                MAX_POWER_UP_CHANCE: 0.7,
+                FOCUS_MODE_LEVEL: 5
+            },
+            POWER_UPS: {
+                SLOW: { type: 'slow', duration: 500, color: '#FBBC05', icon: '⏱️' },
+                SHIELD: { type: 'shield', duration: 1, color: '#4285F4', icon: '🛡️' },
+                MULTIPLIER: { type: 'multiplier', duration: 400, color: '#EA4335', icon: '✨' }
+            }
         };
 
-        class SoundManager {
-            constructor() { this.isUnlocked = false; this.synths = {}; }
-            async unlockAudio() {
-                if (this.isUnlocked) return;
-                try {
-                    await Tone.start();
-                    this.synths = {
-                        shoot: new Tone.PluckSynth({ attackNoise: 0.5, dampening: 4000, resonance: 0.8 }).toDestination(),
-                        hit: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 2, envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination(),
-                        gameOver: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.4 } }).toDestination(),
-                        powerUp: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
-                        levelUp: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination(),
-                    };
-                    this.isUnlocked = true;
-                } catch(e) { console.error("Ses motoru başlatılamadı.", e); }
-            }
-            play(sound) {
-                if (!this.isUnlocked || !this.synths[sound]) return;
-                try {
-                    switch(sound) {
-                        case 'shoot': this.synths.shoot.triggerAttackRelease('C5', '8n'); break;
-                        case 'hit': this.synths.hit.triggerAttackRelease('C2', '8n'); break;
-                        case 'gameOver': this.synths.gameOver.triggerAttackRelease('G2', '4n'); break;
-                        case 'powerUp': this.synths.powerUp.triggerAttackRelease('G5', '16n'); break;
-                        case 'levelUp': 
-                            this.synths.levelUp.triggerAttackRelease('C4', '16n', Tone.now());
-                            this.synths.levelUp.triggerAttackRelease('G4', '16n', Tone.now() + 0.2);
-                            break;
-                    }
-                } catch (e) { /* ignore */ }
-            }
-        }
-
-        class Game {
+        class AAGame {
             constructor() {
                 this.canvas = document.getElementById('gameCanvas');
                 this.ctx = this.canvas.getContext('2d');
-                this.ui = {
-                    score: document.getElementById('score'),
-                    level: document.getElementById('level'),
-                    highScore: document.getElementById('highScore'),
-                    progress: document.getElementById('progress'),
-                    finalScore: document.getElementById('finalScore'),
-                    newLevelText: document.getElementById('newLevelText'),
-                    screens: {
-                        start: document.getElementById('startScreen'),
-                        gameOver: document.getElementById('gameOverScreen'),
-                        levelUp: document.getElementById('levelUpScreen'),
-                        settings: document.getElementById('settingsPanel'),
-                        ui: document.getElementById('ui'),
-                    }
+                this.scoreValue = document.getElementById('scoreValue');
+                this.levelValue = document.getElementById('levelValue');
+                this.pinsRemaining = document.getElementById('pinsRemaining');
+                this.highScoreValue = document.getElementById('highScoreValue');
+                this.progressBar = document.getElementById('progressBar');
+                this.finalScoreText = document.getElementById('finalScoreText');
+                this.highScoreText = document.getElementById('highScoreText');
+                this.pinsPlacedText = document.getElementById('pinsPlacedText');
+                this.levelUpText = document.getElementById('levelUpText');
+                this.powerUpIndicator = document.getElementById('powerUpIndicator');
+
+                this.screens = {
+                    start: document.getElementById('startScreen'),
+                    gameOver: document.getElementById('gameOverScreen'),
+                    levelUp: document.getElementById('levelUpScreen'),
+                    settings: document.getElementById('settingsScreen'),
+                    tutorial: document.getElementById('tutorialScreen')
                 };
-                
+
+                this.buttons = {
+                    start: document.getElementById('startButton'),
+                    restart: document.getElementById('restartButton'),
+                    menu: document.getElementById('menuButton'),
+                    continue: document.getElementById('continueButton'),
+                    settings: document.getElementById('settingsButton'),
+                    closeSettings: document.getElementById('closeSettingsButton'),
+                    tutorial: document.getElementById('tutorialButton'),
+                    backToMenu: document.getElementById('backToMenuButton')
+                };
+
                 this.soundManager = new SoundManager();
+                this.state = 'ready';
                 this.animationFrameId = null;
                 this.lastTime = 0;
-                this.state = 'ready'; // ready, playing, paused, levelup, ended
-                this.settings = { sound: true, vibration: true };
+                this.score = 0;
+                this.level = 1;
+                this.highScore = 0;
+                this.pinsPlaced = 0;
+                this.activePowerUps = {};
+                this.particles = [];
+                this.pulseTimer = 0;
 
-                this.gameLoop = this.gameLoop.bind(this);
+                this.settings = {
+                    sound: true,
+                    vibration: true
+                };
+
+                this.currentPin = null;
+                this.pinsOnCircle = [];
+                this.powerUpsOnCircle = [];
+                this.circle = {
+                    angle: 0,
+                    speed: 0,
+                    direction: 1
+                };
+
                 this.init();
             }
 
             init() {
-                this.loadSettings();
-                this.setupEventListeners();
                 this.resizeCanvas();
-                this.draw();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                window.addEventListener('orientationchange', () => this.resizeCanvas());
+                this.setupEventListeners();
+                this.loadSettings();
+                this.showScreen('start');
+                this.highScore = parseInt(localStorage.getItem('aaGameHighScore') || '0');
+                this.highScoreValue.textContent = this.highScore;
             }
-            
+
+            resizeCanvas() {
+                const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.style.width = `${size}px`;
+                this.canvas.style.height = `${size}px`;
+                this.canvas.width = size * dpr;
+                this.canvas.height = size * dpr;
+                this.ctx.scale(dpr, dpr);
+
+                const logicalSize = size;
+                this.center = { x: logicalSize / 2, y: logicalSize / 2 };
+                this.circleRadius = logicalSize * 0.35;
+                this.pinLength = logicalSize * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
+                this.pinHeadRadius = logicalSize * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
+
+                if (this.state === 'ready' || this.state === 'playing') {
+                    this.draw();
+                }
+            }
+
             setupEventListeners() {
-                window.addEventListener('resize', () => {
-                    this.resizeCanvas();
-                    if (this.state !== 'playing') this.draw();
+                this.buttons.start.addEventListener('click', () => this.startGame());
+                this.buttons.restart.addEventListener('click', () => this.startGame());
+                this.buttons.menu.addEventListener('click', () => this.showScreen('start'));
+                this.buttons.continue.addEventListener('click', () => this.continueToNextLevel());
+                this.buttons.settings.addEventListener('click', () => this.showScreen('settings'));
+                this.buttons.closeSettings.addEventListener('click', () => this.hideSettings());
+                this.buttons.tutorial.addEventListener('click', () => this.showScreen('tutorial'));
+                this.buttons.backToMenu.addEventListener('click', () => this.showScreen('start'));
+
+                document.getElementById('soundToggle').addEventListener('change', (e) => {
+                    this.settings.sound = e.target.checked;
+                    this.saveSettings();
                 });
-                
-                document.getElementById('startButton').addEventListener('click', () => this.startGame());
-                document.getElementById('restartButton').addEventListener('click', () => this.startGame());
-                document.getElementById('continueButton').addEventListener('click', () => this.continueToNextLevel());
-                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings(true));
-                document.querySelector('.settings-close').addEventListener('click', () => this.showSettings(false));
-                document.getElementById('menuButton').addEventListener('click', () => this.showScreen('start'));
-                
-                document.getElementById('soundToggle').addEventListener('change', (e) => this.toggleSetting('sound', e.target.checked));
-                document.getElementById('vibrationToggle').addEventListener('change', (e) => this.toggleSetting('vibration', e.target.checked));
-                
-                const shootAction = (e) => {
-                    if (this.state === 'playing') {
-                        e.preventDefault();
+
+                document.getElementById('vibrationToggle').addEventListener('change', (e) => {
+                    this.settings.vibration = e.target.checked;
+                    this.saveSettings();
+                });
+
+                const shoot = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
+                        console.log(`Input event: ${e.type}, pin y: ${this.currentPin.y}`);
                         this.shootPin();
                     }
                 };
-                this.canvas.addEventListener('mousedown', shootAction);
-                this.canvas.addEventListener('touchstart', shootAction);
+
+                this.canvas.addEventListener('mousedown', shoot);
+                this.canvas.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    console.log(`Touch at: (${touch.clientX}, ${touch.clientY})`);
+                    shoot(e);
+                }, { passive: false });
+
                 document.addEventListener('keydown', (e) => {
-                    if (e.code === 'Space' && this.state === 'playing') this.shootPin();
+                    if (e.code === 'Space' && this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
+                        console.log('Spacebar pressed');
+                        this.shootPin();
+                    }
                 });
             }
 
             async startGame() {
                 await this.soundManager.unlockAudio();
-                this.level = 1;
-                this.score = 0;
-                this.highScore = parseInt(localStorage.getItem('googlePinStrikeHighScore') || '0');
-                this.activePowerUps = {};
-                this.setupLevel();
-                this.showScreen(null);
                 this.state = 'playing';
+                this.score = 0;
+                this.level = 1;
+                this.pinsPlaced = 0;
+                this.activePowerUps = {};
+                this.particles = [];
+                this.setupLevel();
+                this.updateUI();
+                this.showScreen(null);
                 this.lastTime = performance.now();
-                this.animationFrameId = requestAnimationFrame(this.gameLoop);
+                if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+                this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
             }
 
             setupLevel() {
-                const levelIndex = this.level - 1;
-                let levelConfig;
+                const levelIndex = Math.min(this.level - 1, 10);
+                const pinCount = Math.min(
+                    CONFIG.GAME.INITIAL_PINS + levelIndex * CONFIG.GAME.PIN_INCREMENT,
+                    CONFIG.GAME.MAX_PINS
+                );
+                const circleSpeed = Math.min(
+                    CONFIG.PHYSICS.CIRCLE_SPEED_BASE + levelIndex * CONFIG.PHYSICS.CIRCLE_SPEED_INCREMENT,
+                    CONFIG.PHYSICS.MAX_CIRCLE_SPEED
+                );
+                const powerUpChance = Math.min(
+                    CONFIG.GAME.POWER_UP_CHANCE + levelIndex * CONFIG.GAME.POWER_UP_CHANCE_INCREMENT,
+                    CONFIG.GAME.MAX_POWER_UP_CHANCE
+                );
 
-                if (levelIndex < CONFIG.LEVELS.length) {
-                    levelConfig = CONFIG.LEVELS[levelIndex];
-                } else {
-                    const lastLevel = CONFIG.LEVELS[CONFIG.LEVELS.length - 1];
-                    levelConfig = {
-                        pins: Math.min(15, lastLevel.pins + (levelIndex - CONFIG.LEVELS.length + 1)),
-                        speed: Math.min(0.025, lastLevel.speed + (levelIndex - CONFIG.LEVELS.length + 1) * 0.0005),
-                        powerUpChance: Math.min(0.5, lastLevel.powerUpChance + 0.02),
-                        reverse: Math.random() > 0.5
-                    };
-                }
-
-                this.pinsToShoot = levelConfig.pins;
-                this.maxPinsForLevel = levelConfig.pins;
+                this.pinsToShoot = pinCount;
+                this.maxPinsForLevel = pinCount;
                 this.pinsOnCircle = [];
                 this.powerUpsOnCircle = [];
-                this.circle = { 
-                    angle: Math.random() * Math.PI * 2, // Rastgele başlangıç açısı
-                    speed: levelConfig.speed, 
-                    direction: levelConfig.reverse ? -1 : 1 
+                this.circle = {
+                    angle: Math.random() * Math.PI * 2,
+                    speed: circleSpeed,
+                    direction: Math.random() > 0.5 ? 1 : -1
                 };
-                
-                if (this.level >= CONFIG.FOCUS_MODE_LEVEL) {
-                    document.body.classList.add('focus-mode');
-                } else {
-                    document.body.classList.remove('focus-mode');
+
+                if (Math.random() < powerUpChance) {
+                    this.spawnPowerUp();
                 }
-                
-                if (Math.random() < levelConfig.powerUpChance) this.spawnPowerUp();
-                
+
                 this.spawnPin();
                 this.updateUI();
             }
-            
+
             spawnPowerUp() {
-                const powerUpTypes = Object.keys(CONFIG.POWERUPS);
-                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-                this.powerUpsOnCircle.push({
-                    angle: Math.random() * Math.PI * 2,
-                    type: type
-                });
+                const powerUpTypes = Object.values(CONFIG.POWER_UPS);
+                const powerUp = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                let angle;
+                let isSafe = false;
+                const maxAttempts = 10;
+                let attempts = 0;
+
+                while (!isSafe && attempts < maxAttempts) {
+                    angle = Math.random() * Math.PI * 2;
+                    isSafe = true;
+                    for (const pin of this.pinsOnCircle) {
+                        let angleDiff = Math.abs(pin.angle - angle);
+                        angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+                        if (angleDiff < CONFIG.PHYSICS.COLLISION_THRESHOLD * 2) {
+                            isSafe = false;
+                            break;
+                        }
+                    }
+                    attempts++;
+                }
+
+                if (isSafe) {
+                    this.powerUpsOnCircle.push({
+                        angle: angle,
+                        type: powerUp.type,
+                        color: powerUp.color,
+                        icon: powerUp.icon
+                    });
+                }
             }
 
-            continueToNextLevel() {
-                this.setupLevel();
-                this.showScreen(null);
-                this.state = 'playing';
-                this.lastTime = performance.now();
-                this.animationFrameId = requestAnimationFrame(this.gameLoop);
-            }
-
-            resizeCanvas() {
-                const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
-                this.canvas.width = size;
-                this.canvas.height = size;
-                this.center = { x: size / 2, y: size / 2 };
-                this.circleRadius = size * 0.25;
-                this.pinLength = size * CONFIG.PIN_LENGTH_RATIO;
-                this.pinHeadRadius = size * CONFIG.PIN_HEAD_RADIUS_RATIO;
-            }
-            
             spawnPin() {
+                const logicalHeight = this.canvas.height / (window.devicePixelRatio || 1);
                 this.currentPin = {
-                    y: this.canvas.height - this.pinLength * 2,
+                    y: logicalHeight - this.pinLength * 2, // Adjusted for more margin
                     isFlying: false
                 };
+                console.log(`Spawned pin at y: ${this.currentPin.y}, canvas height: ${logicalHeight}`);
             }
 
             shootPin() {
                 if (this.state !== 'playing' || !this.currentPin || this.currentPin.isFlying) return;
                 this.currentPin.isFlying = true;
-                if(this.settings.sound) this.soundManager.play('shoot');
-                if(this.settings.vibration) navigator.vibrate(50);
-            }
-
-            gameOver() {
-                this.state = 'ended';
-                cancelAnimationFrame(this.animationFrameId);
-                if(this.settings.sound) this.soundManager.play('gameOver');
-                if(this.settings.vibration) navigator.vibrate([100, 50, 100]);
-                this.showScreen('gameOver');
-                this.updateUI();
-            }
-            
-            levelUp() {
-                this.state = 'levelup';
-                cancelAnimationFrame(this.animationFrameId); // Stop the loop
-                this.level++;
-                if(this.settings.sound) this.soundManager.play('levelUp');
-                if(this.settings.vibration) navigator.vibrate(100);
-                this.showScreen('levelUp');
-                this.updateUI();
+                if (this.settings.sound) this.soundManager.play('shoot');
+                if (this.settings.vibration && navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
             }
 
             gameLoop(time) {
@@ -547,190 +712,419 @@
                 this.lastTime = time;
                 this.update(deltaTime);
                 this.draw();
-                this.animationFrameId = requestAnimationFrame(this.gameLoop);
+                this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
             }
 
             update(deltaTime) {
                 let speedMultiplier = this.activePowerUps.slow ? 0.5 : 1;
-                this.circle.angle += this.circle.speed * this.circle.direction * speedMultiplier * deltaTime;
+                this.circle.angle = (this.circle.angle + this.circle.speed * this.circle.direction * speedMultiplier * deltaTime) % (Math.PI * 2);
 
                 if (this.currentPin && this.currentPin.isFlying) {
-                    this.currentPin.y -= CONFIG.PIN_FLY_SPEED * deltaTime;
+                    this.currentPin.y -= CONFIG.PHYSICS.PIN_FLY_SPEED * deltaTime;
                     this.checkCollision();
                 }
 
                 Object.keys(this.activePowerUps).forEach(key => {
                     if (key !== 'shield') {
                         this.activePowerUps[key] -= deltaTime;
-                        if (this.activePowerUps[key] <= 0) delete this.activePowerUps[key];
+                        if (this.activePowerUps[key] <= 0) {
+                            delete this.activePowerUps[key];
+                            this.updatePowerUpDisplay();
+                        }
                     }
                 });
+
+                this.updateParticles(deltaTime);
+                this.pulseTimer = Math.max(0, this.pulseTimer - deltaTime);
             }
-            
+
             checkCollision() {
-                if (!this.currentPin) return;
                 const pinTipY = this.currentPin.y;
                 const distanceToCenter = this.center.y - pinTipY;
+                console.log(`Checking collision: pinTipY=${pinTipY.toFixed(2)}, centerY=${this.center.y.toFixed(2)}, distanceToCenter=${distanceToCenter.toFixed(2)}, circleRadius=${this.circleRadius.toFixed(2)}`);
 
-                if (distanceToCenter >= this.circleRadius) {
-                    const newPinAngle = 1.5 * Math.PI - this.circle.angle;
-                    const threshold = Math.atan2(this.pinHeadRadius, this.circleRadius) * 2.6;
+                if (distanceToCenter <= this.circleRadius + this.pinHeadRadius && distanceToCenter >= this.circleRadius - this.pinHeadRadius) {
+                    const newPinAngle = (1.5 * Math.PI - this.circle.angle) % (Math.PI * 2);
+                    const threshold = CONFIG.PHYSICS.COLLISION_THRESHOLD;
+                    console.log(`New pin angle: ${(newPinAngle * 180 / Math.PI).toFixed(2)}°`);
 
-                    for (const p of this.pinsOnCircle) {
-                        let angleDiff = Math.abs(p.angle - newPinAngle);
-                        if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+                    if (this.pinsOnCircle.length === 0) {
+                        console.log('First pin, no collision possible');
+                        this.placePin(newPinAngle);
+                        return;
+                    }
+
+                    let collisionDetected = false;
+                    for (const pin of this.pinsOnCircle) {
+                        let pinAngle = (pin.angle) % (Math.PI * 2);
+                        let angleDiff = Math.abs(newPinAngle - pinAngle);
+                        angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+                        console.log(`Checking pin at angle: ${(pinAngle * 180 / Math.PI).toFixed(2)}°, diff: ${(angleDiff * 180 / Math.PI).toFixed(2)}°, threshold: ${(threshold * 180 / Math.PI).toFixed(2)}°`);
+
                         if (angleDiff < threshold) {
                             if (this.activePowerUps.shield) {
+                                console.log('Shield activated, collision ignored');
                                 delete this.activePowerUps.shield;
-                                if (this.pinsOnCircle.length < this.maxPinsForLevel) {
-                                    this.spawnPin();
-                                } else {
-                                    this.levelUp();
-                                }
-                                this.updateUI();
-                                return;
+                                this.updatePowerUpDisplay();
+                                this.createParticles(
+                                    this.center.x + Math.cos(newPinAngle + this.circle.angle) * this.circleRadius,
+                                    this.center.y + Math.sin(newPinAngle + this.circle.angle) * this.circleRadius,
+                                    CONFIG.POWER_UPS.SHIELD.color,
+                                    20
+                                );
+                                collisionDetected = true;
+                                break;
                             }
+                            console.log('Collision detected, game over');
+                            this.createParticles(
+                                this.center.x + Math.cos(newPinAngle + this.circle.angle) * this.circleRadius,
+                                this.center.y + Math.sin(newPinAngle + this.circle.angle) * this.circleRadius,
+                                CONFIG.COLORS.DANGER,
+                                50
+                            );
                             this.gameOver();
                             return;
                         }
                     }
-                    
-                    this.powerUpsOnCircle = this.powerUpsOnCircle.filter(p => {
-                        let angleDiff = Math.abs(p.angle - newPinAngle);
-                        if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-                        if (angleDiff < threshold) {
-                            this.activatePowerUp(p.type);
-                            return false;
-                        }
-                        return true;
-                    });
 
-                    if(this.settings.sound) this.soundManager.play('hit');
-                    this.pinsOnCircle.push({ angle: newPinAngle });
-                    this.score += this.activePowerUps.score ? 20 : 10;
-                    
-                    if (this.pinsOnCircle.length === this.maxPinsForLevel) {
-                        this.levelUp();
-                    } else {
-                        this.spawnPin();
+                    if (!collisionDetected) {
+                        this.placePin(newPinAngle);
                     }
-                    this.updateUI();
                 }
             }
-            
-            activatePowerUp(type) {
-                if(this.settings.sound) this.soundManager.play('powerUp');
-                this.activePowerUps[type] = CONFIG.POWERUPS[type].duration;
+
+            placePin(newPinAngle) {
+                console.log('No collision, placing pin');
+                this.powerUpsOnCircle = this.powerUpsOnCircle.filter(powerUp => {
+                    let powerUpAngle = (powerUp.angle) % (Math.PI * 2);
+                    let angleDiff = Math.abs(powerUpAngle - newPinAngle);
+                    angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+
+                    if (angleDiff < CONFIG.PHYSICS.COLLISION_THRESHOLD) {
+                        console.log(`Power-up collected at angle: ${(powerUpAngle * 180 / Math.PI).toFixed(2)}°`);
+                        this.activatePowerUp(powerUp.type, powerUp.color, powerUp.icon);
+                        this.createParticles(
+                            this.center.x + Math.cos(powerUp.angle + this.circle.angle) * this.circleRadius,
+                            this.center.y + Math.sin(powerUp.angle + this.circle.angle) * this.circleRadius,
+                            powerUp.color,
+                            20
+                        );
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (this.settings.sound) this.soundManager.play('hit');
+                this.pinsOnCircle.push({ angle: newPinAngle });
+                this.pinsPlaced++;
+                this.pulseTimer = 12;
+                const scoreMultiplier = this.activePowerUps.multiplier ? CONFIG.GAME.BONUS_MULTIPLIER : 1;
+                this.score += Math.floor(CONFIG.GAME.SCORE_PER_PIN * scoreMultiplier);
+                this.pinsToShoot--;
+
+                if (this.pinsToShoot === 0) {
+                    console.log('Level completed');
+                    this.levelUp();
+                } else {
+                    this.spawnPin();
+                    if (Math.random() < CONFIG.GAME.POWER_UP_CHANCE) {
+                        this.spawnPowerUp();
+                    }
+                }
+
+                this.updateUI();
+            }
+
+            activatePowerUp(type, color, icon) {
+                if (this.settings.sound) this.soundManager.play('powerUp');
+                const powerUpConfig = Object.values(CONFIG.POWER_UPS).find(p => p.type === type);
+                this.activePowerUps[type] = powerUpConfig.duration;
+                this.updatePowerUpDisplay();
+                this.createParticles(this.center.x, this.center.y, color, 30);
+            }
+
+            updatePowerUpDisplay() {
+                this.powerUpIndicator.innerHTML = '';
+                Object.keys(this.activePowerUps).forEach(key => {
+                    const powerUp = Object.values(CONFIG.POWER_UPS).find(p => p.type === key);
+                    if (!powerUp) return;
+
+                    const badge = document.createElement('div');
+                    badge.className = 'powerUpBadge';
+                    badge.textContent = powerUp.icon;
+                    badge.style.background = powerUp.color;
+                    badge.style.color = 'white';
+                    this.powerUpIndicator.appendChild(badge);
+                    setTimeout(() => badge.classList.add('active'), 10);
+                });
+            }
+
+            createParticles(x, y, color, count = 15) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        size: Math.random() * 5 + 2,
+                        color: color,
+                        speedX: (Math.random() - 0.5) * 6,
+                        speedY: (Math.random() - 0.5) * 6,
+                        life: 40 + Math.random() * 20
+                    });
+                }
+            }
+
+            updateParticles(deltaTime) {
+                this.particles = this.particles.filter(p => {
+                    p.x += p.speedX * deltaTime;
+                    p.y += p.speedY * deltaTime;
+                    p.life -= deltaTime;
+                    return p.life > 0;
+                });
+            }
+
+            levelUp() {
+                this.state = 'levelup';
+                cancelAnimationFrame(this.animationFrameId);
+                if (this.settings.sound) this.soundManager.play('levelUp');
+                if (this.settings.vibration && navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+                this.levelUpText.textContent = `Level ${this.level + 1}`;
+                this.showScreen('levelUp');
+            }
+
+            continueToNextLevel() {
+                this.level++;
+                this.setupLevel();
+                this.showScreen(null);
+                this.state = 'playing';
+                this.lastTime = performance.now();
+                this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
+            }
+
+            gameOver() {
+                this.state = 'ended';
+                cancelAnimationFrame(this.animationFrameId);
+                if (this.settings.sound) this.soundManager.play('gameOver');
+                if (this.settings.vibration && navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+                this.createParticles(this.center.x, this.center.y, CONFIG.COLORS.DANGER, 50);
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('aaGameHighScore', this.highScore);
+                }
+                this.finalScoreText.textContent = `Score: ${this.score}`;
+                this.highScoreText.textContent = `High Score: ${this.highScore}`;
+                this.pinsPlacedText.textContent = `Pins Placed: ${this.pinsPlaced}`;
+                this.showScreen('gameOver');
             }
 
             draw() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
+                const logicalWidth = this.canvas.width / (window.devicePixelRatio || 1);
+                const logicalHeight = this.canvas.height / (window.devicePixelRatio || 1);
+                this.ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+                // Draw safe zones
+                this.drawSafeZones();
+
+                // Draw circle with pulse effect
                 this.ctx.beginPath();
-                this.ctx.arc(this.center.x, this.center.y, this.circleRadius, 0, Math.PI * 2);
+                const pulseScale = this.pulseTimer > 0 ? 1 + 0.05 * Math.sin(this.pulseTimer * 0.5) : 1;
+                this.ctx.arc(this.center.x, this.center.y, this.circleRadius * pulseScale, 0, Math.PI * 2);
                 this.ctx.fillStyle = CONFIG.COLORS.CIRCLE;
                 this.ctx.fill();
-                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                this.ctx.lineWidth = 1.5;
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
+                this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                this.ctx.shadowBlur = 8;
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
 
-                this.powerUpsOnCircle.forEach(p => this.drawPowerUp(p));
-                this.pinsOnCircle.forEach(p => this.drawPin(p.angle));
-                if (this.currentPin) this.drawPin(null, this.currentPin.y, this.currentPin.isFlying);
-                
+                // Draw power-ups
+                this.powerUpsOnCircle.forEach(powerUp => {
+                    const angle = powerUp.angle + this.circle.angle;
+                    const x = this.center.x + Math.cos(angle) * this.circleRadius;
+                    const y = this.center.y + Math.sin(angle) * this.circleRadius;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, this.pinHeadRadius * 1.5, 0, Math.PI * 2);
+                    this.ctx.fillStyle = powerUp.color;
+                    this.ctx.fill();
+
+                    this.ctx.font = `${this.pinHeadRadius * 2}px Arial`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillText(powerUp.icon, x, y);
+                });
+
+                // Draw pins
+                this.pinsOnCircle.forEach(pin => {
+                    this.drawPin(pin.angle);
+                });
+
+                // Draw flying pin
+                if (this.currentPin) {
+                    this.drawPin(null, this.currentPin.y, this.currentPin.isFlying);
+                }
+
+                // Shield effect
                 if (this.activePowerUps.shield) {
                     this.ctx.beginPath();
-                    this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 15, 0, Math.PI * 2);
-                    this.ctx.strokeStyle = CONFIG.COLORS.SHIELD;
-                    this.ctx.lineWidth = 5;
+                    this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 10, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = CONFIG.POWER_UPS.SHIELD.color;
+                    this.ctx.lineWidth = 4;
                     this.ctx.stroke();
                 }
+
+                this.drawParticles();
             }
-            
-            drawPowerUp(powerUp) {
-                const angle = powerUp.angle + this.circle.angle;
-                const x = this.center.x + Math.cos(angle) * this.circleRadius;
-                const y = this.center.y + Math.sin(angle) * this.circleRadius;
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, 10, 0, Math.PI * 2);
-                this.ctx.fillStyle = CONFIG.COLORS.POWERUP;
-                this.ctx.fill();
+
+            drawSafeZones() {
+                const threshold = CONFIG.PHYSICS.COLLISION_THRESHOLD * 2;
+                this.ctx.strokeStyle = CONFIG.COLORS.SAFE_ZONE;
+                this.ctx.lineWidth = 4;
+                this.ctx.globalAlpha = 0.3;
+                this.ctx.shadowColor = CONFIG.COLORS.SUCCESS;
+                this.ctx.shadowBlur = 6;
+
+                this.pinsOnCircle.forEach(pin => {
+                    const pinAngle = (pin.angle + this.circle.angle) % (Math.PI * 2);
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.center.x, this.center.y, this.circleRadius, pinAngle - threshold, pinAngle + threshold);
+                    this.ctx.stroke();
+                });
+
+                this.ctx.globalAlpha = 1;
+                this.ctx.shadowBlur = 0;
             }
 
             drawPin(angle, yPos, isFlying = false) {
                 let headX, headY, tailX, tailY;
+
                 if (angle !== null) {
-                    const totalAngle = angle + this.circle.angle;
+                    const totalAngle = (angle + this.circle.angle) % (Math.PI * 2);
                     headX = this.center.x + Math.cos(totalAngle) * this.circleRadius;
                     headY = this.center.y + Math.sin(totalAngle) * this.circleRadius;
                     tailX = this.center.x + Math.cos(totalAngle) * (this.circleRadius + this.pinLength);
                     tailY = this.center.y + Math.sin(totalAngle) * (this.circleRadius + this.pinLength);
                 } else {
-                    headX = this.center.x; tailX = this.center.x;
-                    headY = yPos - this.pinLength; tailY = yPos;
+                    headX = this.center.x;
+                    tailX = this.center.x;
+                    headY = yPos - this.pinLength;
+                    tailY = yPos;
                 }
+
                 this.ctx.strokeStyle = isFlying ? CONFIG.COLORS.FLYING_PIN : CONFIG.COLORS.PIN;
+                this.ctx.lineWidth = isFlying ? 3 : 2;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(tailX, tailY);
+                this.ctx.lineTo(headX, headY);
+                this.ctx.stroke();
+
                 this.ctx.fillStyle = isFlying ? CONFIG.COLORS.FLYING_PIN : CONFIG.COLORS.PIN;
-                this.ctx.lineWidth = 3;
-                this.ctx.beginPath(); this.ctx.moveTo(tailX, tailY); this.ctx.lineTo(headX, headY); this.ctx.stroke();
-                this.ctx.beginPath(); this.ctx.arc(headX, headY, this.pinHeadRadius, 0, Math.PI * 2); this.ctx.fill();
+                this.ctx.beginPath();
+                this.ctx.arc(headX, headY, this.pinHeadRadius, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+
+            drawParticles() {
+                this.particles.forEach(p => {
+                    this.ctx.globalAlpha = p.life / 60;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+                this.ctx.globalAlpha = 1;
             }
 
             updateUI() {
-                this.ui.score.textContent = this.score;
-                this.ui.level.textContent = this.level;
-                if (this.score > this.highScore) {
-                    this.highScore = this.score;
-                    localStorage.setItem('googlePinStrikeHighScore', this.highScore);
-                }
-                this.ui.highScore.textContent = this.highScore;
-                this.ui.progress.style.width = `${(this.pinsOnCircle.length / this.maxPinsForLevel) * 100}%`;
-                if (this.state === 'ended') this.ui.finalScore.textContent = `SKOR: ${this.score}`;
-                if (this.state === 'levelup') this.ui.newLevelText.textContent = `SEVİYE ${this.level}`;
+                this.scoreValue.textContent = this.score;
+                this.levelValue.textContent = this.level;
+                this.pinsRemaining.textContent = this.pinsToShoot;
+                this.highScoreValue.textContent = this.highScore;
+                this.progressBar.style.width = `${((this.maxPinsForLevel - this.pinsToShoot) / this.maxPinsForLevel) * 100}%`;
             }
 
             showScreen(screenName) {
-                Object.values(this.ui.screens).forEach(s => s.classList.add('hidden'));
-                if (screenName && this.ui.screens[screenName]) {
-                    this.ui.screens[screenName].classList.remove('hidden');
-                } else if (!screenName) {
-                    this.ui.screens.ui.classList.remove('hidden');
+                Object.values(this.screens).forEach(screen => {
+                    screen.classList.remove('active');
+                });
+
+                const isGameActive = !screenName;
+                document.getElementById('uiOverlay').style.display = isGameActive ? 'flex' : 'none';
+                document.getElementById('progressContainer').style.display = isGameActive ? 'block' : 'none';
+                document.getElementById('powerUpIndicator').style.display = isGameActive ? 'flex' : 'none';
+                document.getElementById('settingsButton').style.display = isGameActive ? 'flex' : 'none';
+
+                if (screenName && this.screens[screenName]) {
+                    this.screens[screenName].classList.add('active');
                 }
             }
-            
-            showSettings(show) {
-                if (show) {
-                    if (this.state === 'playing') {
-                        this.state = 'paused';
-                        cancelAnimationFrame(this.animationFrameId);
-                    }
-                    this.ui.screens.settings.classList.remove('hidden');
-                } else {
-                    this.ui.screens.settings.classList.add('hidden');
-                    if (this.state === 'paused') {
-                        this.state = 'playing';
-                        this.lastTime = performance.now();
-                        this.animationFrameId = requestAnimationFrame(this.gameLoop);
-                    }
-                }
+
+            hideSettings() {
+                this.showScreen(null);
             }
-            
+
             loadSettings() {
-                const settings = localStorage.getItem('googlePinStrikeSettings');
-                if (settings) {
-                    this.settings = JSON.parse(settings);
+                const savedSettings = localStorage.getItem('aaGameSettings');
+                if (savedSettings) {
+                    this.settings = JSON.parse(savedSettings);
                     document.getElementById('soundToggle').checked = this.settings.sound;
                     document.getElementById('vibrationToggle').checked = this.settings.vibration;
                 }
             }
-            
-            toggleSetting(key, value) {
-                this.settings[key] = value;
-                localStorage.setItem('googlePinStrikeSettings', JSON.stringify(this.settings));
+
+            saveSettings() {
+                localStorage.setItem('aaGameSettings', JSON.stringify(this.settings));
             }
         }
 
-        new Game();
+        class SoundManager {
+            constructor() {
+                this.isUnlocked = false;
+                this.synths = {};
+            }
+
+            async unlockAudio() {
+                if (this.isUnlocked || typeof Tone === 'undefined') return;
+                try {
+                    await Tone.start();
+                    this.synths = {
+                        shoot: new Tone.PluckSynth({ attackNoise: 0.5, dampening: 4000, resonance: 0.7 }).toDestination(),
+                        hit: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 2, envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.2 } }).toDestination(),
+                        gameOver: new Tone.FMSynth({ harmonicity: 3, modulationIndex: 10 }).toDestination(),
+                        powerUp: new Tone.Synth({ oscillator: { type: "triangle" } }).toDestination(),
+                        levelUp: new Tone.PolySynth(Tone.Synth).toDestination()
+                    };
+                    this.isUnlocked = true;
+                } catch(e) {
+                    console.error("Audio engine failed to start:", e);
+                }
+            }
+
+            play(sound) {
+                if (!this.isUnlocked) return;
+                try {
+                    const now = Tone.now();
+                    switch(sound) {
+                        case 'shoot': this.synths.shoot.triggerAttackRelease("C5", "8n", now); break;
+                        case 'hit': this.synths.hit.triggerAttackRelease("C2", "8n", now); break;
+                        case 'gameOver': this.synths.gameOver.triggerAttackRelease("C2", "1n", now); break;
+                        case 'powerUp': this.synths.powerUp.triggerAttackRelease("G5", "16n", now); break;
+                        case 'levelUp': this.synths.levelUp.triggerAttackRelease(["C4", "E4", "G4"], "8n", now); break;
+                    }
+                } catch(e) {
+                    console.error("Failed to play sound:", e);
+                }
+            }
+        }
+
+        new AAGame();
     });
     </script>
 </body>
