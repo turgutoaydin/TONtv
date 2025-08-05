@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AA Game by @liraKurdi</title>
+    <title>aa Game</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -24,31 +24,33 @@
                 <span id="levelValue" class="uiValue">1</span>
             </div>
             <div class="uiPanel">
-                <span>PINS</span>
-                <span id="pinsRemaining" class="uiValue">0</span>
-            </div>
-            <div class="uiPanel">
                 <span>HIGH SCORE</span>
                 <span id="highScoreValue" class="uiValue">0</span>
             </div>
         </div>
-        <canvas id="gameCanvas"></canvas>
         <div id="progressContainer">
             <div id="progressBar"></div>
         </div>
+        <canvas id="gameCanvas"></canvas>
         <div class="powerUpIndicator" id="powerUpIndicator"></div>
-        <div class="settingsPanel" id="settingsButton">
-            ⚙️
-        </div>
-        <div class.credit">Version 1.10002 powered by @LiraKurdiBot</div>
+        
         <!-- Screens -->
-        <div class="screen" id="startScreen">
+        <div class="screen active" id="startScreen">
             <div class="screenContent">
-                <h1>AA GAME</h1>
-                <h2>Pin the rotating circle without collisions!</h2>
+                <img src="assets/images/logo.svg" class="start-screen-logo" alt="Oyun Logosu" onerror="this.style.display='none'">
+                
+                <h3 id="menuHighScoreValue">Your High Score: 0</h3>
+
                 <div class="buttonGroup">
                     <button class="btn btn-primary" id="startButton">START</button>
-                    <button class="btn btn-secondary" id="tutorialButton">HOW TO PLAY</button>
+                    <div class="secondary-button-group">
+                        <button class="btn btn-secondary" id="tutorialButton">How to Play</button>
+                        <button class="btn btn-secondary" id="menuSettingsButton">Settings</button>
+                    </div>
+                </div>
+                <div class="version-info">
+                    <span>Version 1.2.0</span>
+                    <a href="https://t.me/LiraKurdiBot" target="_blank">powered by @LiraKurdiBot</a>
                 </div>
             </div>
         </div>
@@ -77,6 +79,22 @@
             <div class="screenContent settingsContent">
                 <h1>SETTINGS</h1>
                 <div class="settingsRow">
+                    <span>Theme</span>
+                    <select id="themeSelector" class="settings-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+                <div class="settingsRow">
+                    <span>Pin Color</span>
+                    <select id="pinColorSelector" class="settings-select">
+                        <option value="default">Default</option>
+                        <option value="blue">Blue</option>
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                    </select>
+                </div>
+                <div class="settingsRow">
                     <span>Sound Effects</span>
                     <label class="toggleSwitch">
                         <input type="checkbox" id="soundToggle" checked>
@@ -98,11 +116,23 @@
         <div class="screen" id="tutorialScreen">
             <div class="screenContent">
                 <h1>HOW TO PLAY</h1>
-                <div style="text-align: left; margin-bottom: 1.5rem;">
-                    <p style="margin-bottom: 0.8rem;">1️⃣ Tap or click to shoot pins onto the circle.</p>
-                    <p style="margin-bottom: 0.8rem;">2️⃣ Game ends only if pins collide.</p>
-                    <p style="margin-bottom: 0.8rem;">3️⃣ Place all pins to level up.</p>
-                    <p>4️⃣ Grab power-ups: slow, shield, or score multiplier.</p>
+                <div class="tutorial-list">
+                    <div class="tutorial-item">
+                        <span class="tutorial-icon">1️⃣</span>
+                        <p>Tap or click to shoot pins onto the circle.</p>
+                    </div>
+                     <div class="tutorial-item">
+                        <span class="tutorial-icon">2️⃣</span>
+                        <p>Game ends only if pins collide.</p>
+                    </div>
+                     <div class="tutorial-item">
+                        <span class="tutorial-icon">3️⃣</span>
+                        <p>Place all pins to level up.</p>
+                    </div>
+                     <div class="tutorial-item">
+                        <span class="tutorial-icon">4️⃣</span>
+                        <p>Grab power-ups: slow, shield, or score multiplier.</p>
+                    </div>
                 </div>
                 <div class="buttonGroup">
                     <button class="btn btn-primary" id="backToMenuButton">GOT IT</button>
@@ -110,7 +140,9 @@
             </div>
         </div>
     </div>
-    <!-- Harici JavaScript dosyası eklendi -->
+    <!-- Harici JavaScript dosyaları -->
+    <script src="assets/js/settings.js" defer></script>
+    <script src="assets/js/skills.js" defer></script>
     <script src="assets/js/main.js" defer></script>
 </body>
 </html>
