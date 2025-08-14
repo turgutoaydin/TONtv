@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AA Game by @liraKurdi (Standalone Edition)</title>
+    <title>AA Game by @liraKurdi</title>
     
     <!-- Modern Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,13 +19,15 @@
     <style>
         /* --- Custom Styles & Tailwind Configuration --- */
         html.dark {
-            --bg-color: #181818;
-            --secondary-bg-color: #272727;
+            --bg-color: #18181b; /* Slightly darker bg */
+            --secondary-bg-color: #27272a;
             --text-color: #E4E4E7;
             --hint-color: #71717A;
             --button-color: #3B82F6;
             --button-text-color: #ffffff;
-            --pause-bg-color: rgba(39, 39, 39, 0.5);
+            --pause-bg-color: rgba(24, 24, 27, 0.5);
+            --circle-color-start: #27272a;
+            --circle-color-end: #3f3f46;
         }
         html:not(.dark) {
             --bg-color: #F4F4F5;
@@ -35,6 +37,8 @@
             --button-color: #2563EB;
             --button-text-color: #ffffff;
             --pause-bg-color: rgba(244, 244, 245, 0.5);
+            --circle-color-start: #FFFFFF;
+            --circle-color-end: #e5e7eb;
         }
 
         body {
@@ -48,9 +52,8 @@
 
         #gameCanvas {
             display: block;
-            border-radius: 50%;
             touch-action: none;
-            box-shadow: 0 0 40px -10px var(--button-color);
+            transition: transform 0.1s ease-out; /* For screen shake */
         }
 
         .screen {
@@ -80,37 +83,43 @@
             transform: scale(1);
             opacity: 1;
         }
+
+        /* Score update animation */
+        @keyframes pulse-quick {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-pulse-quick {
+            animation: pulse-quick 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="antialiased">
 
     <div id="gameContainer" class="relative w-full h-screen flex flex-col items-center justify-center p-4">
         
-        <!-- Game UI Overlay (Score, Level etc.) -->
-        <div id="uiOverlay" class="absolute top-5 w-full max-w-md mx-auto hidden justify-between items-center px-4 z-10">
-            <!-- Pause Button -->
-            <button id="pauseButton" class="absolute left-6 top-0 p-2 rounded-full z-20 transition-opacity hover:opacity-75">
-                 <svg style="color: var(--text-color);" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 24C10 24 10 24 10 24C9.44772 24 9 23.5523 9 23V1C9 0.447715 9.44772 0 10 0C10.5523 0 11 0.447715 11 1V23C11 23.5523 10.5523 24 10 24Z" />
-                    <path d="M14 24C14 24 14 24 14 24C13.4477 24 13 23.5523 13 23V1C13 0.447715 13.4477 0 14 0C14.5523 0 15 0.447715 15 1V23C15 23.5523 14.5523 24 14 24Z" />
-                </svg>
-            </button>
-            <div class="text-center w-1/3">
-                <div id="scoreValue" class="font-bold text-2xl" style="color: var(--text-color);">0</div>
+        <button id="pauseButton" class="absolute top-6 left-6 p-2 rounded-full z-20 transition-opacity hover:opacity-75" style="display: none;">
+            <svg style="color: var(--text-color);" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 24C10 24 10 24 10 24C9.44772 24 9 23.5523 9 23V1C9 0.447715 9.44772 0 10 0C10.5523 0 11 0.447715 11 1V23C11 23.5523 10.5523 24 10 24Z" />
+                <path d="M14 24C14 24 14 24 14 24C13.4477 24 13 23.5523 13 23V1C13 0.447715 13.4477 0 14 0C14.5523 0 15 0.447715 15 1V23C15 23.5523 14.5523 24 14 24Z" />
+            </svg>
+        </button>
+
+        <div id="uiOverlay" class="absolute top-6 w-full max-w-lg mx-auto hidden justify-between items-end px-6 z-10">
+            <div class="text-left">
                 <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);">Score</div>
+                <div id="scoreValue" class="font-semibold text-2xl transition-transform" style="color: var(--text-color);">0</div>
             </div>
-            <div class="text-center w-1/3">
-                <div id="levelValue" class="font-bold text-2xl" style="color: var(--text-color);">1</div>
-                <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);">Level</div>
+            <div class="absolute left-1/2 -translate-x-1/2 text-center">
+                 <div id="levelValue" class="font-bold text-5xl leading-none" style="color: var(--text-color);">1</div>
             </div>
-            <div class="text-center w-1/3">
-                <div id="highScoreValue" class="font-bold text-2xl" style="color: var(--text-color);">0</div>
+            <div class="text-right">
                 <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);">High Score</div>
+                <div id="highScoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div>
             </div>
         </div>
 
-        <!-- Level Progress Bar -->
-        <div id="progressContainer" class="absolute top-20 w-3/4 max-w-xs h-1.5 rounded-full hidden z-10 bg-gray-200 dark:bg-gray-700">
+        <div id="progressContainer" class="absolute top-24 w-1/2 max-w-xs h-1 rounded-full hidden z-10" style="background-color: var(--secondary-bg-color);">
             <div id="progressBar" class="h-full rounded-full transition-all duration-300" style="background-color: var(--button-color);"></div>
         </div>
 
@@ -118,7 +127,7 @@
         <canvas id="gameCanvas"></canvas>
 
         <!-- Dynamic Game Feedback (e.g., "COMBO!", "CLOSE CALL!") -->
-        <div id="gameFeedback" class="absolute top-1/4 text-4xl font-extrabold transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none z-20" style="color: var(--button-color);"></div>
+        <div id="gameFeedback" class="absolute top-1/3 text-4xl font-extrabold transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none z-20" style="color: var(--button-color);"></div>
 
         <!-- Active Power-up Indicators -->
         <div id="powerUpIndicator" class="absolute bottom-24 flex gap-3 z-10"></div>
@@ -127,15 +136,19 @@
         <!-- Start Screen -->
         <div class="screen z-50 active" id="startScreen" style="backdrop-filter: none;">
             <div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);">
-                <img src="assets/images/logo.svg" class="w-24 h-24 mx-auto mb-4" alt="Oyun Logosu" onerror="this.style.display='none'">
+                <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto mb-4">
+                    <circle cx="50" cy="50" r="48" fill="var(--button-color)" />
+                    <text x="50" y="62" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="var(--button-text-color)" text-anchor="middle">AA</text>
+                </svg>
                 <p class="mb-8 font-semibold text-lg" style="color: var(--text-color);">High Score: <span id="menuHighScoreValue">0</span></p>
                 
                 <div class="flex flex-col gap-3">
-                    <button id="startButton" class="w-full text-lg font-bold py-3 rounded-xl transition-transform hover:scale-105 active:scale-95" style="background-color: var(--button-color); color: var(--button-text-color);">Yusuf Başla</button>
+                    <button id="startButton" class="w-full text-lg font-bold py-3 rounded-xl transition-transform hover:scale-105 active:scale-95" style="background-color: var(--button-color); color: var(--button-text-color);">BAŞLA</button>
                     <div class="grid grid-cols-2 gap-3">
                          <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl border-2" style="border-color: var(--button-color); color: var(--button-color);">How to Play</button>
                          <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl border-2" style="border-color: var(--button-color); color: var(--button-color);">Settings</button>
                     </div>
+                    <button id="sponsorsButton" class="w-full font-semibold py-3 rounded-xl border-2" style="border-color: var(--button-color); color: var(--button-color);">Sponsors</button>
                 </div>
 
                 <div class="mt-8 text-xs" style="color: var(--hint-color);">
@@ -251,9 +264,9 @@
              <div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);">
                 <h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);">Sponsors</h1>
                  <a href="https://t.me/LiraKurdi" target="_blank" class="flex items-center p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700">
-                    <span class="text-2xl mr-4">❤️</span>
-                    <span class="font-semibold" style="color: var(--text-color);">@LiraKurdi</span>
-                </a>
+                     <span class="text-2xl mr-4">❤️</span>
+                     <span class="font-semibold" style="color: var(--text-color);">@LiraKurdi</span>
+                 </a>
                 <button id="closeSponsorsButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl" style="background-color: var(--button-color); color: var(--button-text-color);">CLOSE</button>
              </div>
         </div>
@@ -262,6 +275,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         try {
+            // --- SETTINGS ---
             let gameSettings = { theme: 'light', sound: true, vibration: true, pinColor: 'default' };
 
             const applyTheme = (theme) => {
@@ -289,6 +303,7 @@
                 document.getElementById('vibrationToggle').checked = gameSettings.vibration;
             };
 
+            // --- SOUND MANAGER ---
             class SoundManager {
                 constructor() { this.isUnlocked = false; this.synths = {}; }
                 async unlockAudio() {
@@ -300,7 +315,8 @@
                             hit: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 2, envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.2 } }).toDestination(),
                             gameOver: new Tone.FMSynth({ harmonicity: 3, modulationIndex: 10 }).toDestination(),
                             powerUp: new Tone.Synth({ oscillator: { type: "triangle" } }).toDestination(),
-                            levelUp: new Tone.PolySynth(Tone.Synth).toDestination()
+                            levelUp: new Tone.PolySynth(Tone.Synth).toDestination(),
+                            bomb: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0 } }).toDestination()
                         };
                         this.isUnlocked = true;
                     } catch (e) { console.error("Audio engine failed to start:", e); }
@@ -315,11 +331,13 @@
                            else if (sound === 'shoot') this.synths.shoot.triggerAttackRelease("C5", "8n", now);
                            else if (sound === 'hit') this.synths.hit.triggerAttackRelease("C2", "8n", now);
                            else if (sound === 'powerUp') this.synths.powerUp.triggerAttackRelease("G5", "16n", now);
+                           else if (sound === 'bomb') this.synths.bomb.triggerAttackRelease("0.2n", now);
                         }
                     } catch (e) { console.error(`Failed to play sound: ${sound}`, e); }
                 }
             }
 
+            // --- LEVEL MANAGER ---
             class AdaptiveLevelManager {
                 constructor() { this.resetForNewGame(); }
                 updateStats(pinTime, isCloseCall, isCombo) {
@@ -341,7 +359,7 @@
                         const baseLevels = [
                             { pins: 6, speed: 0.0040, pChance: 0.1, dChanges: 0, obstacles: 0 },
                             { pins: 8, speed: 0.0045, pChance: 0.15, dChanges: 0, obstacles: 0 },
-                            { pins: 10, speed: 0.0050, pChance: 0.20, dChanges: 0, obstacles: 0 },
+                            { pins: 10, speed: 0.0050, pChance: 0.20, dChanges: 1, obstacles: 0 },
                         ];
                         return baseLevels[level - 1];
                     }
@@ -356,7 +374,7 @@
                     let newObstacles = lastLevel.obstacles;
                     if (level > 8 && accuracy > 0.95) newObstacles += (Math.random() < 0.2 ? 1 : 0);
                     const isBoss = (level % 10 === 0);
-                    if(isBoss) { newSpeed *= 1.1; newPins += 3; newObstacles = Math.max(1, newObstacles); }
+                    if(isBoss) { newSpeed *= 1.1; newPins += 3; newObstacles = Math.max(1, newObstacles); newDChanges = Math.max(2, newDChanges); }
                     const levelData = {
                         pins: Math.floor(Math.min(Math.max(8, newPins), 40)), speed: Math.min(Math.max(0.003, newSpeed), 0.02),
                         pChance: Math.min(0.2 + level * 0.02, 0.8), dChanges: Math.floor(Math.min(newDChanges, 5)),
@@ -367,6 +385,7 @@
                 }
             }
 
+            // --- CONSTANTS ---
             const GAME_SKILLS = {
                 SLOW: { type: 'slow', duration: 500, color: '#FBBC05', icon: '⏱️' },
                 SHIELD: { type: 'shield', duration: 1, color: '#4285F4', icon: '🛡️' },
@@ -374,10 +393,11 @@
                 BOMB: { type: 'bomb', duration: 1, color: '#202124', icon: '💣' }
             };
             const CONFIG = {
-                PHYSICS: { PIN_LENGTH_RATIO: 0.12, PIN_HEAD_RADIUS_RATIO: 0.018, PIN_FLY_SPEED: 12, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48 },
+                PHYSICS: { PIN_LENGTH_RATIO: 0.12, PIN_HEAD_RADIUS_RATIO: 0.018, PIN_FLY_SPEED: 15, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48 },
                 GAME: { SCORE_PER_PIN: 10, BONUS_MULTIPLIER: 2.5, COMBO_TIME_LIMIT: 60, COMBO_BONUS_SCORE: 5 }
             };
 
+            // --- MAIN GAME CLASS ---
             class AAGame {
                 constructor() {
                     this.soundManager = new SoundManager();
@@ -388,6 +408,7 @@
                 }
 
                 initDOM() {
+                    this.gameContainer = document.getElementById('gameContainer');
                     this.canvas = document.getElementById('gameCanvas'); this.ctx = this.canvas.getContext('2d');
                     this.ui = {
                         score: document.getElementById('scoreValue'), level: document.getElementById('levelValue'),
@@ -408,22 +429,6 @@
                         tutorial: document.getElementById('tutorialScreen'),
                         sponsors: document.getElementById('sponsorsScreen')
                     };
-                    this.buttons = { 
-                        start: document.getElementById('startButton'), 
-                        restart: document.getElementById('restartButton'), 
-                        menu: document.getElementById('menuButton'), 
-                        continue: document.getElementById('continueButton'), 
-                        settings: document.getElementById('menuSettingsButton'), 
-                        closeSettings: document.getElementById('closeSettingsButton'), 
-                        tutorial: document.getElementById('tutorialButton'), 
-                        backToMenu: document.getElementById('backToMenuButton'),
-                        pause: document.getElementById('pauseButton'),
-                        resume: document.getElementById('resumeButton'),
-                        pauseRestart: document.getElementById('pauseRestartButton'),
-                        pauseMenu: document.getElementById('pauseMenuButton'),
-                        sponsors: document.getElementById('sponsorsButton'),
-                        closeSponsors: document.getElementById('closeSponsorsButton')
-                    };
                     this.settingsUI = { theme: document.getElementById('themeSelector'), pinColor: document.getElementById('pinColorSelector'), sound: document.getElementById('soundToggle'), vibration: document.getElementById('vibrationToggle') };
                 }
 
@@ -434,6 +439,9 @@
                     this.powerUpsOnCircle = []; this.obstacles = [];
                     this.circle = { angle: 0, speed: 0, direction: 1, directionChangePins: [], isBoss: false, baseRadius: 0 };
                     this.pinShotTime = 0;
+                    this.screenShakeTime = 0; this.screenShakeMagnitude = 0;
+                    this.listenersAttached = false; // Flag to control listener attachment
+                    
                     this.resizeCanvas();
                     window.addEventListener('resize', () => this.resizeCanvas());
                     this.setupEventListeners();
@@ -445,51 +453,112 @@
                 }
 
                 resizeCanvas() {
-                    const size = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+                    const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.7);
                     const dpr = window.devicePixelRatio || 1;
+                    
                     this.canvas.style.width = `${size}px`; this.canvas.style.height = `${size}px`;
                     this.canvas.width = size * dpr; this.canvas.height = size * dpr;
                     this.ctx.scale(dpr, dpr);
+                    
                     const logicalSize = size;
                     this.center = { x: logicalSize / 2, y: logicalSize / 2 };
-                    this.circleRadius = logicalSize * 0.35; this.pinLength = logicalSize * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
+                    this.circleRadius = logicalSize * 0.3; 
+                    this.pinLength = logicalSize * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
                     this.pinHeadRadius = logicalSize * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
-                    if (this.state !== 'playing') { this.draw(); }
+                    
+                    if (this.state !== 'playing' && this.state !== 'paused') { this.draw(); }
                 }
 
                 setupEventListeners() {
-                    Object.keys(this.buttons).forEach(key => {
-                        if(!this.buttons[key]) return;
-                        this.buttons[key].addEventListener('click', () => {
-                            switch(key) {
-                                case 'start': this.startGame(); break;
-                                case 'restart': this.startGame(); break;
-                                case 'menu': this.showScreen('start'); break;
-                                case 'continue': this.continueToNextLevel(); break;
-                                case 'settings': this.showScreen('settings'); break;
-                                case 'tutorial': this.showScreen('tutorial'); break;
-                                case 'sponsors': this.showScreen('sponsors'); break;
-                                case 'closeSettings':
-                                case 'backToMenu':
-                                case 'closeSponsors':
-                                    this.hideSettings(); break;
-                                case 'pause': this.pauseGame(); break;
-                                case 'resume': this.resumeGame(); break;
-                                case 'pauseRestart': this.startGame(); break;
-                                case 'pauseMenu': this.showScreen('start'); break;
+                    // BUG FIX: Use a flag to ensure listeners are only attached once.
+                    // This prevents duplicate listeners on game restart and fixes mobile button issues.
+                    if (this.listenersAttached) {
+                        return;
+                    }
+
+                    const handleInteraction = (event) => {
+                        // Find the closest button to the clicked/tapped element.
+                        const button = event.target.closest('button');
+                        if (button) {
+                            const buttonId = button.id;
+                            switch(buttonId) {
+                                case 'startButton':
+                                case 'restartButton':
+                                case 'pauseRestartButton':
+                                    this.startGame();
+                                    break;
+                                case 'menuButton':
+                                case 'pauseMenuButton':
+                                case 'backToMenuButton':
+                                case 'closeSponsorsButton':
+                                case 'closeSettingsButton':
+                                    this.showScreen('start');
+                                    break;
+                                case 'continueButton':
+                                    this.continueToNextLevel();
+                                    break;
+                                case 'menuSettingsButton':
+                                    this.showScreen('settings');
+                                    break;
+                                case 'tutorialButton':
+                                    this.showScreen('tutorial');
+                                    break;
+                                case 'sponsorsButton':
+                                    this.showScreen('sponsors');
+                                    break;
+                                case 'pauseButton':
+                                    this.pauseGame();
+                                    break;
+                                case 'resumeButton':
+                                    this.resumeGame();
+                                    break;
                             }
-                        });
+                        } else {
+                             // Handle the main game action (shooting the pin)
+                             if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
+                                event.preventDefault(); // Prevent zoom/scroll on canvas tap
+                                this.shootPin();
+                            }
+                        }
+                    };
+
+                    // Use a single 'click' listener on the main container for robust mobile support
+                    this.gameContainer.addEventListener('click', handleInteraction);
+                    // Use 'touchstart' for immediate shooting response without waiting for 'click'
+                    this.gameContainer.addEventListener('touchstart', (e) => {
+                        if (!e.target.closest('button')) {
+                           handleInteraction(e);
+                        }
+                    }, { passive: false });
+
+                    document.addEventListener('keydown', (e) => { 
+                        if (e.code === 'Space') { 
+                            if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
+                                e.preventDefault();
+                                this.shootPin();
+                            }
+                        }
                     });
-                    const shoot = (e) => { e.preventDefault(); if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) { this.shootPin(); } };
-                    this.canvas.addEventListener('mousedown', shoot);
-                    this.canvas.addEventListener('touchstart', shoot, { passive: false });
-                    document.addEventListener('keydown', (e) => { if (e.code === 'Space') { shoot(e); } });
+
+                    // Settings listeners are simple and don't need delegation here.
+                    this.settingsUI.theme.addEventListener('change', (e) => { applyTheme(e.target.value); saveSettings(); this.draw(); });
+                    this.settingsUI.pinColor.addEventListener('change', (e) => { gameSettings.pinColor = e.target.value; saveSettings(); this.draw(); });
+                    this.settingsUI.sound.addEventListener('change', (e) => { gameSettings.sound = e.target.checked; saveSettings(); });
+                    this.settingsUI.vibration.addEventListener('change', (e) => { gameSettings.vibration = e.target.checked; saveSettings(); });
+
+                    this.listenersAttached = true;
                 }
+
 
                 vibrate(duration) {
                     if (gameSettings.vibration && navigator.vibrate) {
                         navigator.vibrate(duration);
                     }
+                }
+
+                triggerScreenShake(magnitude, duration) {
+                    this.screenShakeMagnitude = magnitude;
+                    this.screenShakeTime = duration;
                 }
 
                 pauseGame() {
@@ -501,13 +570,14 @@
                 resumeGame() {
                     if (this.state !== 'paused') return;
                     this.state = 'playing';
-                    this.showScreen(null); // Hide all screens
-                    this.lastTime = performance.now(); // Prevents large deltaTime jump
+                    this.showScreen(null);
+                    this.lastTime = performance.now();
                     requestAnimationFrame(this.gameLoop.bind(this));
                 }
 
                 async startGame() {
                     await this.soundManager.unlockAudio();
+                    // Don't re-init everything, just reset game state
                     this.state = 'playing';
                     this.score = 0;
                     this.level = 1;
@@ -526,6 +596,17 @@
                     this.pinsPlacedThisLevel = 0; this.pinsOnCircle = []; this.powerUpsOnCircle = []; this.obstacles = [];
                     this.activePowerUps = {}; this.comboCount = 0; this.comboTimer = 0;
                     this.circle = { angle: Math.random() * Math.PI * 2, speed: levelData.speed, direction: Math.random() > 0.5 ? 1 : -1, directionChangePins: [], isBoss: !!levelData.isBoss, baseRadius: this.circleRadius };
+                    
+                    if (levelData.dChanges > 0) {
+                        let pinsForChanges = Array.from({length: this.pinsToShoot - 2}, (_, i) => i + 2);
+                        for (let i = 0; i < levelData.dChanges; i++) {
+                            if (pinsForChanges.length === 0) break;
+                            const changeIndex = Math.floor(Math.random() * pinsForChanges.length);
+                            const pinNumber = pinsForChanges.splice(changeIndex, 1)[0];
+                            this.circle.directionChangePins.push(this.pinsToShoot - pinNumber + 1);
+                        }
+                    }
+
                     for (let i = 0; i < levelData.obstacles; i++) { this.obstacles.push({ angle: (i * (2 * Math.PI)) / levelData.obstacles, speed: (Math.random() * 0.005 + 0.005) * (Math.random() > 0.5 ? 1 : -1) }); }
                     if (Math.random() < levelData.pChance) this.spawnPowerUp();
                     this.spawnPin();
@@ -543,7 +624,9 @@
                     if (isSafe) this.powerUpsOnCircle.push({ angle: angle, type: powerUp.type, icon: powerUp.icon });
                 }
 
-                spawnPin() { const logicalHeight = this.canvas.height / (window.devicePixelRatio || 1); this.currentPin = { y: logicalHeight - this.pinLength * 2.5, isFlying: false }; }
+                spawnPin() { 
+                    this.currentPin = { y: this.center.y + this.circleRadius, isFlying: false }; 
+                }
                 shootPin() { 
                     if (this.state !== 'playing' || !this.currentPin || this.currentPin.isFlying) return; 
                     this.currentPin.isFlying = true; this.soundManager.play('shoot'); this.vibrate(50);
@@ -551,15 +634,11 @@
                 }
 
                 gameLoop(time) {
-                    if (this.state === 'ended') return; // Stop loop completely on game over
-                    
+                    if (this.state === 'ended') return;
                     this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
-                    
-                    if (this.state !== 'playing') return; // Skip updates if paused or on levelup screen
-
-                    const deltaTime = Math.min(32, time - this.lastTime) / (1000 / 60); // Capped deltaTime
+                    if (this.state !== 'playing') return;
+                    const deltaTime = Math.min(32, time - this.lastTime) / (1000 / 60);
                     this.lastTime = time;
-                    
                     this.update(deltaTime);
                     this.draw();
                 }
@@ -568,25 +647,48 @@
                     let speedMultiplier = this.activePowerUps.slow ? 0.5 : 1;
                     this.circle.angle = (this.circle.angle + this.circle.speed * this.circle.direction * speedMultiplier * deltaTime) % (Math.PI * 2);
                     this.obstacles.forEach(obs => obs.angle = (obs.angle + obs.speed * speedMultiplier * deltaTime) % (Math.PI * 2));
-                    if (this.currentPin && this.currentPin.isFlying) { this.currentPin.y -= CONFIG.PHYSICS.PIN_FLY_SPEED * deltaTime; this.checkCollision(); }
+                    if (this.currentPin && this.currentPin.isFlying) { 
+                        this.currentPin.y -= CONFIG.PHYSICS.PIN_FLY_SPEED * deltaTime; 
+                        this.checkCollision(); 
+                    }
                     Object.keys(this.activePowerUps).forEach(key => { if (key !== 'shield' && key !== 'bomb') { this.activePowerUps[key] -= deltaTime; if (this.activePowerUps[key] <= 0) { delete this.activePowerUps[key]; this.updatePowerUpDisplay(); } } });
                     this.comboTimer = Math.max(0, this.comboTimer - deltaTime); if(this.comboTimer === 0) this.comboCount = 0;
                     this.updateParticles(deltaTime);
+
+                    if (this.screenShakeTime > 0) {
+                        this.screenShakeTime -= deltaTime;
+                        const shakeX = (Math.random() - 0.5) * this.screenShakeMagnitude;
+                        const shakeY = (Math.random() - 0.5) * this.screenShakeMagnitude;
+                        this.canvas.style.transform = `translate(${shakeX}px, ${shakeY}px)`;
+                    } else {
+                        this.canvas.style.transform = 'translate(0, 0)';
+                    }
                 }
                 
                 checkCollision() {
                     if (!this.currentPin || !this.currentPin.isFlying) return;
+                    
                     const pinHeadY = this.currentPin.y - this.pinLength;
-                    const distanceToCenter = this.center.y - pinHeadY;
-                    if (distanceToCenter >= this.circleRadius) {
+                    const hitDistance = this.center.y - this.circleRadius;
+
+                    if (pinHeadY <= hitDistance) {
                         this.currentPin.isFlying = false;
+                        
                         const newPinAngle = (1.5 * Math.PI - this.circle.angle + Math.PI * 2) % (Math.PI * 2);
+                        
                         const threshold = CONFIG.PHYSICS.COLLISION_THRESHOLD;
                         let isCloseCall = false;
-                        for (const obs of this.obstacles) { let angleDiff = Math.abs(newPinAngle - obs.angle); angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff); if (angleDiff < threshold) { this.gameOver(); return; } }
+
+                        for (const obs of this.obstacles) { 
+                            let angleDiff = Math.abs(newPinAngle - obs.angle); 
+                            angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff); 
+                            if (angleDiff < threshold) { this.gameOver(); return; } 
+                        }
+                        
                         for (const pin of this.pinsOnCircle) {
                             let angleDiff = Math.abs(newPinAngle - pin.angle);
                             angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+                            
                             if (angleDiff < threshold) {
                                 if (this.activePowerUps.shield) {
                                     this.soundManager.play('hit'); this.createParticles(this.center.x, this.center.y - this.circleRadius, GAME_SKILLS.SHIELD.color, 30);
@@ -594,24 +696,65 @@
                                     this.pinsToShoot--; this.currentPin = null;
                                     if (this.pinsToShoot === 0) { this.levelUp(); } else { this.spawnPin(); }
                                     this.updateUI(); return;
-                                } else { this.gameOver(); return; }
+                                } else { 
+                                    this.triggerScreenShake(8, 20);
+                                    this.gameOver(); return; 
+                                }
                             }
                             if (angleDiff < threshold * 1.5) isCloseCall = true;
                         }
+                        
                         const pinTime = (performance.now() - this.pinShotTime) / 1000;
                         this.levelManager.updateStats(pinTime, isCloseCall, this.comboTimer > 0);
                         this.placePin(newPinAngle);
-                        if (isCloseCall) this.showFeedback("Close Call!", "#FBBC05");
+                        
+                        if (isCloseCall) {
+                            this.showFeedback("Close Call!", "#FBBC05");
+                            this.vibrate(20);
+                            this.triggerScreenShake(4, 10);
+                        }
                     }
                 }
                 
                 placePin(newPinAngle) {
-                    this.powerUpsOnCircle = this.powerUpsOnCircle.filter(powerUp => { let angleDiff = Math.abs(powerUp.angle - newPinAngle); angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff); if (angleDiff < CONFIG.PHYSICS.COLLISION_THRESHOLD) { this.activatePowerUp(powerUp.type); return false; } return true; });
+                    let hitPowerUp = null;
+                    let powerUpIndex = -1;
+
+                    this.powerUpsOnCircle.forEach((powerUp, index) => {
+                        let angleDiff = Math.abs(powerUp.angle - newPinAngle);
+                        angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+                        if (angleDiff < CONFIG.PHYSICS.COLLISION_THRESHOLD) {
+                            hitPowerUp = powerUp;
+                            powerUpIndex = index;
+                        }
+                    });
+
+                    if (hitPowerUp) {
+                        this.powerUpsOnCircle.splice(powerUpIndex, 1);
+                        if (hitPowerUp.type === 'bomb') {
+                            this.activateBomb(newPinAngle);
+                            this.pinsToShoot--;
+                            this.currentPin = null;
+                            if (this.pinsToShoot === 0) { this.levelUp(); } else { this.spawnPin(); }
+                            this.updateUI();
+                            return;
+                        } else {
+                            this.activatePowerUp(hitPowerUp.type);
+                        }
+                    }
+
                     this.soundManager.play('hit');
-                    this.pinsOnCircle.push({ angle: newPinAngle, number: this.maxPinsForLevel - this.pinsToShoot + 1 });
+                    this.pinsOnCircle.push({ angle: newPinAngle, number: this.pinsToShoot });
                     this.pinsPlacedThisLevel++;
                     this.comboTimer = CONFIG.GAME.COMBO_TIME_LIMIT; this.comboCount++;
-                    if (this.comboCount > 1) { this.showFeedback(`COMBO x${this.comboCount}!`, `var(--button-color)`); this.score += this.comboCount * CONFIG.GAME.COMBO_BONUS_SCORE; }
+                    if (this.comboCount > 1) { this.showFeedback(`COMBO x${this.comboCount}!`, this.getPinColor()); this.score += this.comboCount * CONFIG.GAME.COMBO_BONUS_SCORE; }
+                    
+                    if (this.circle.directionChangePins.includes(this.pinsToShoot)) {
+                        this.circle.direction *= -1;
+                        this.showFeedback("REVERSE!", "#EF4444");
+                        this.vibrate(80);
+                    }
+
                     const scoreMultiplier = this.activePowerUps.multiplier ? CONFIG.GAME.BONUS_MULTIPLIER : 1;
                     this.score += Math.floor(CONFIG.GAME.SCORE_PER_PIN * scoreMultiplier);
                     this.pinsToShoot--; this.currentPin = null;
@@ -628,6 +771,35 @@
                         this.createParticles(this.center.x, this.center.y, powerUpConfig.color, 30);
                     }
                 }
+                
+                activateBomb(angle) {
+                    this.soundManager.play('bomb');
+                    const powerUpConfig = GAME_SKILLS.BOMB;
+                    const bombRadius = CONFIG.PHYSICS.COLLISION_THRESHOLD * 4;
+                    
+                    let removedCount = 0;
+                    this.pinsOnCircle = this.pinsOnCircle.filter(pin => {
+                        let angleDiff = Math.abs(pin.angle - angle);
+                        angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
+                        if (angleDiff < bombRadius) {
+                            removedCount++;
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (removedCount > 0) {
+                        const scoreMultiplier = this.activePowerUps.multiplier ? CONFIG.GAME.BONUS_MULTIPLIER : 1;
+                        this.score += Math.floor(CONFIG.GAME.SCORE_PER_PIN * scoreMultiplier) * removedCount;
+                        this.showFeedback("BOOM!", powerUpConfig.color);
+                    }
+                    
+                    const headX = this.center.x + Math.cos(this.circle.angle + angle) * this.circleRadius;
+                    const headY = this.center.y + Math.sin(this.circle.angle + angle) * this.circleRadius;
+                    this.createParticles(headX, headY, powerUpConfig.color, 50);
+                    this.vibrate([80, 40, 80]);
+                }
+
                 updatePowerUpDisplay() {
                     this.ui.powerUpIndicator.innerHTML = '';
                     Object.keys(this.activePowerUps).forEach(key => {
@@ -642,14 +814,15 @@
                         setTimeout(() => badge.classList.add('active'), 10);
                     });
                 }
-                createParticles(x, y, color, count = 15) { for (let i = 0; i < count; i++) { this.particles.push({ x, y, size: Math.random() * 4 + 2, color, speedX: (Math.random() - 0.5) * 6, speedY: (Math.random() - 0.5) * 6, life: 40 + Math.random() * 20 }); } }
+                
+                createParticles(x, y, color, count = 30) { for (let i = 0; i < count; i++) { this.particles.push({ x, y, size: Math.random() * 2 + 1, color, speedX: (Math.random() - 0.5) * 7, speedY: (Math.random() - 0.5) * 7, life: 30 + Math.random() * 20 }); } }
                 updateParticles(deltaTime) { this.particles = this.particles.filter(p => { p.x += p.speedX * deltaTime; p.y += p.speedY * deltaTime; p.life -= deltaTime; return p.life > 0; }); }
 
                 levelUp() {
                     this.state = 'levelup';
                     this.soundManager.play('levelUp'); this.vibrate(100);
                     this.ui.levelUpText.textContent = `Level ${this.level + 1}`;
-                    this.ui.levelUpHighScoreText.textContent = `High Score: ${this.highScore}`;
+                    this.ui.levelUpHighScoreText.textContent = `High Score: ${Math.max(this.highScore, this.score)}`;
                     this.showScreen('levelUp');
                 }
                 
@@ -663,8 +836,10 @@
                 }
 
                 gameOver() {
+                    if(this.state === 'ended') return;
                     this.state = 'ended';
                     this.soundManager.play('gameOver'); this.vibrate([100, 50, 100]);
+                    this.triggerScreenShake(10, 25);
                     if (this.score > this.highScore) {
                         this.highScore = this.score;
                         localStorage.setItem('aaGameHighScore', this.highScore);
@@ -685,15 +860,49 @@
                     else { feedback = "Great effort! You're getting better with each game."; }
                     this.ui.gameOverFeedback.textContent = feedback;
                 }
+                
+                getPinColor() {
+                    const defaultColor = getComputedStyle(document.documentElement).getPropertyValue('--button-color');
+                    const colorMap = {
+                        default: defaultColor,
+                        blue: '#3B82F6',
+                        red: '#EF4444',
+                        green: '#22C55E'
+                    };
+                    return colorMap[gameSettings.pinColor] || defaultColor;
+                }
 
                 draw() {
                     const logicalWidth = this.canvas.width / (window.devicePixelRatio || 1);
                     const logicalHeight = this.canvas.height / (window.devicePixelRatio || 1);
                     this.ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+                    this.ctx.save();
+                    this.ctx.shadowColor = this.getPinColor();
+                    this.ctx.shadowBlur = 20 + Math.sin(performance.now() / 300) * 5;
+                    this.ctx.shadowOffsetX = 0;
+                    this.ctx.shadowOffsetY = 0;
+
+                    const gradient = this.ctx.createRadialGradient(this.center.x, this.center.y, this.circleRadius * 0.8, this.center.x, this.center.y, this.circleRadius);
+                    gradient.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-start'));
+                    gradient.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-end'));
+
                     this.ctx.beginPath();
                     this.ctx.arc(this.center.x, this.center.y, this.circleRadius, 0, Math.PI * 2);
-                    this.ctx.fillStyle = gameSettings.theme === 'dark' ? '#272727' : '#FFFFFF';
+                    this.ctx.fillStyle = gradient;
                     this.ctx.fill();
+                    this.ctx.restore(); 
+
+                    if (this.circle.isBoss) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.center.x, this.center.y, this.circleRadius, 0, Math.PI * 2);
+                        this.ctx.strokeStyle = '#EF4444';
+                        this.ctx.lineWidth = 4;
+                        this.ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 200) * 0.4;
+                        this.ctx.stroke();
+                        this.ctx.globalAlpha = 1;
+                    }
+
                     this.drawObstacles();
                     this.pinsOnCircle.forEach(pin => this.drawPin(pin.angle, null, false, pin.number));
                     this.powerUpsOnCircle.forEach(p => this.drawPowerUpOnCircle(p));
@@ -719,45 +928,88 @@
                 }
 
                 drawPin(angle, yPos, isFlying, number) {
-                    let headX, headY, tailX, tailY;
-                    const pinColor = getComputedStyle(document.documentElement).getPropertyValue('--button-color');
+                    this.ctx.save();
+                    const pinColor = this.getPinColor();
                     
-                    if (angle !== null) {
-                        const totalAngle = (angle + this.circle.angle) % (Math.PI * 2);
-                        headX = this.center.x + Math.cos(totalAngle) * this.circleRadius; headY = this.center.y + Math.sin(totalAngle) * this.circleRadius;
-                        tailX = this.center.x + Math.cos(totalAngle) * (this.circleRadius + this.pinLength); tailY = this.center.y + Math.sin(totalAngle) * (this.circleRadius + this.pinLength);
-                    } else { headX = this.center.x; tailX = this.center.x; headY = yPos - this.pinLength; tailY = yPos; }
+                    if (angle !== null) { // Attached pin
+                        this.ctx.translate(this.center.x, this.center.y);
+                        this.ctx.rotate(angle + this.circle.angle);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(this.circleRadius, 0);
+                        this.ctx.lineTo(this.circleRadius + this.pinLength, 0);
+                        this.ctx.strokeStyle = pinColor;
+                        this.ctx.lineWidth = 3;
+                        this.ctx.stroke();
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.circleRadius + this.pinLength, 0, this.pinHeadRadius, 0, Math.PI * 2);
+                        this.ctx.fillStyle = pinColor;
+                        this.ctx.fill();
+
+                    } else { // Flying or waiting pin
+                        this.ctx.translate(this.center.x, yPos);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, 0);
+                        this.ctx.lineTo(0, -this.pinLength);
+                        this.ctx.strokeStyle = pinColor;
+                        this.ctx.lineWidth = 3;
+                        this.ctx.stroke();
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, -this.pinLength, this.pinHeadRadius, 0, Math.PI * 2);
+                        this.ctx.fillStyle = pinColor;
+                        this.ctx.fill();
+                    }
                     
-                    this.ctx.strokeStyle = pinColor;
-                    this.ctx.lineWidth = 2.5; this.ctx.lineCap = 'round';
-                    this.ctx.beginPath(); this.ctx.moveTo(tailX, tailY); this.ctx.lineTo(headX, headY); this.ctx.stroke();
+                    const headX = (angle !== null) ? this.circleRadius + this.pinLength : 0;
+                    const headY_offset = (angle !== null) ? 0 : -this.pinLength;
                     
-                    this.ctx.fillStyle = pinColor;
-                    this.ctx.beginPath(); this.ctx.arc(headX, headY, this.pinHeadRadius, 0, Math.PI * 2); this.ctx.fill();
-                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(headX, headY_offset, this.pinHeadRadius, 0, Math.PI * 2);
+                    const headGrad = this.ctx.createRadialGradient(headX - 2, headY_offset - 2, 0, headX, headY_offset, this.pinHeadRadius);
+                    headGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
+                    headGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                    this.ctx.fillStyle = headGrad;
+                    this.ctx.fill();
+
                     if (number !== null && number > 0) {
                         this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--button-text-color');
-                        this.ctx.font = `bold ${this.pinHeadRadius * 1.1}px Inter`; this.ctx.textAlign = 'center'; this.ctx.textBaseline = 'middle';
-                        this.ctx.fillText(number, headX, headY + 1);
+                        this.ctx.font = `bold ${this.pinHeadRadius * 1.2}px Inter`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(number, headX, headY_offset);
                     }
+
+                    this.ctx.restore();
                 }
 
                 drawParticles() { this.particles.forEach(p => { this.ctx.globalAlpha = p.life / 60; this.ctx.fillStyle = p.color; this.ctx.beginPath(); this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); this.ctx.fill(); }); this.ctx.globalAlpha = 1; }
                 
                 updateUI() {
-                    this.ui.score.textContent = this.score; this.ui.level.textContent = this.level;
-                    this.ui.highScore.textContent = this.highScore;
-                    const progress = this.maxPinsForLevel > 0 ? ((this.maxPinsForLevel - this.pinsToShoot) / this.maxPinsForLevel) * 100 : 0;
+                    if (this.ui.score.textContent !== String(this.score)) {
+                        this.ui.score.textContent = this.score;
+                        this.ui.score.classList.add('animate-pulse-quick');
+                        setTimeout(() => this.ui.score.classList.remove('animate-pulse-quick'), 300);
+                    }
+                    this.ui.level.textContent = this.level;
+                    this.ui.highScore.textContent = Math.max(this.highScore, this.score);
+                    const progress = this.maxPinsForLevel > 0 ? (this.pinsPlacedThisLevel / this.maxPinsForLevel) * 100 : 0;
                     this.ui.progressBar.style.width = `${progress}%`;
                 }
 
                 showScreen(screenName) {
                     Object.values(this.screens).forEach(screen => screen.classList.remove('active'));
-                    const isGameActive = !screenName;
+                    const isGameActive = !screenName || screenName === 'pause';
                     this.ui.uiOverlay.style.display = isGameActive ? 'flex' : 'none';
-                    this.buttons.pause.style.display = isGameActive ? 'block' : 'none';
+                    const pauseButton = document.getElementById('pauseButton');
+                    if (pauseButton) {
+                        pauseButton.style.display = isGameActive && screenName !== 'pause' ? 'block' : 'none';
+                    }
                     this.ui.progressContainer.style.display = isGameActive ? 'block' : 'none';
                     this.ui.powerUpIndicator.style.display = isGameActive ? 'flex' : 'none';
+                    
                     if (screenName && this.screens[screenName]) {
                         this.screens[screenName].classList.add('active');
                     }
