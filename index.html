@@ -102,15 +102,13 @@
                 <img id="logo" src="assets/images/logo.png" alt="AA Game Logo" class="w-28 h-28 mx-auto mb-4" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
                 <div id="logo-fallback" style="display:none;" class="w-28 h-28 mx-auto mb-4 flex items-center justify-center rounded-full" style="background-color: var(--button-bg-start);"><span class="text-5xl font-extrabold" style="color: var(--button-text-color);">AA</span></div>
                 <p class="mb-8 font-semibold text-lg" style="color: var(--text-color);"><span data-lang="high_score">High Score</span>: <span id="menuHighScoreValue">0</span></p>
-                <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
                     <button id="startButton" class="w-full text-lg font-bold py-3.5 rounded-xl btn-primary" data-lang="start_button">BAŞLA</button>
-                    <div class="grid grid-cols-2 gap-3">
-                         <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="how_to_play_button">Nasıl Oynanır</button>
-                         <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="settings_button">Ayarlar</button>
-                    </div>
+                    <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="how_to_play_button">Nasıl Oynanır</button>
+                    <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="settings_button">Ayarlar</button>
                     <button id="sponsorsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="sponsors_button">Sponsorlar</button>
                 </div>
-                <div class="mt-8 text-xs" style="color: var(--hint-color);"><span>Version 1.2.0</span></div>
+                <div class="mt-8 text-xs" style="color: var(--hint-color);"><span>Version 1.0.1</span></div>
             </div>
         </div>
 
@@ -123,8 +121,8 @@
                 <h1 class="text-3xl font-extrabold mb-6 text-center" style="color: var(--text-color);" data-lang="settings_title">Ayarlar</h1>
                 <div class="flex flex-col md:flex-row gap-6">
                     <div class="flex-1 space-y-4">
-                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="visuals_label">Görsel Ayarlar</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="themeSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="theme_label">Tema</label><select id="themeSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="pinColorSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_color_label">Ok Rengi</label><select id="pinColorSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="circleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="circle_style_label">Çember Stili</label><select id="circleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="backgroundStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="background_style_label">Arkaplan</label><select id="backgroundStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div></div></div>
-                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="gameplay_label">Oynanış</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="pinPlacementSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_placement_label">Ok Yerleşimi</label><select id="pinPlacementSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="particleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="particle_effect_label">Parçacık Efekti</label><select id="particleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="sfx_label">Ses Efektleri</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="soundToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="vibration_label">Titreşim</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="vibrationToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div></div></div>
+                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="visuals_label">Görsel Ayarlar</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="themeSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="theme_label">Tema</label><select id="themeSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="pinColorSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_color_label">Pin Rengi</label><select id="pinColorSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="circleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="circle_style_label">Çember Stili</label><select id="circleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="backgroundStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="background_style_label">Arkaplan</label><select id="backgroundStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div></div></div>
+                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="gameplay_label">Oynanış</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="pinPlacementSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_placement_label">Pin Yerleşimi</label><select id="pinPlacementSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="particleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="particle_effect_label">Parçacık Efekti</label><select id="particleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="sfx_label">Ses Efektleri</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="soundToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="vibration_label">Titreşim</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="vibrationToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div></div></div>
                     </div>
                     <div class="w-full md:w-48 flex-shrink-0">
                         <div class="p-4 rounded-lg h-full flex flex-col" style="background-color: var(--bg-color);">
@@ -137,7 +135,7 @@
             </div>
         </div>
 
-        <div class="screen z-50" id="tutorialScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="how_to_play_title">Nasıl Oynanır</h1><div class="space-y-6"><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_basics_title">Temel Kurallar</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🎯</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_1">Dönen çembere okları fırlatmak için ekrana dokun.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💥</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_2">Diğer oklara veya engellere çarpma.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">📈</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_3">Seviyeyi geçmek için tüm okları başarıyla yerleştir.</p></div></div></div><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_powerups_title">Güçlendirmeler</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💣</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_1"><b>Bomba:</b> Çarptığı yerdeki okları temizler.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🛡️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_2"><b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">⏱️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_3"><b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">✨</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_4"><b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.</p></div></div></div></div><button id="backToMenuButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="got_it_button">ANLADIM</button></div></div>
+        <div class="screen z-50" id="tutorialScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="how_to_play_title">Nasıl Oynanır</h1><div class="space-y-6"><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_basics_title">Temel Kurallar</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🎯</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_1">Dönen çembere pinleri fırlatmak için ekrana dokun.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💥</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_2">Diğer pinlere veya engellere çarpma.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">📈</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_3">Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.</p></div></div></div><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_powerups_title">Güçlendirmeler</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💣</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_1"><b>Bomba:</b> Çarptığı yerdeki pinleri temizler.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🛡️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_2"><b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">⏱️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_3"><b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">✨</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_4"><b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.</p></div></div></div></div><button id="backToMenuButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="got_it_button">ANLADIM</button></div></div>
         <div class="screen z-50" id="sponsorsScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="sponsors_title">Sponsorlar</h1><a href="https://t.me/LiraKurdi" target="_blank" class="block p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"><div class="flex items-center"><span class="text-2xl mr-4">❤️</span><span class="font-semibold" style="color: var(--text-color);">@LiraKurdi</span></div></a><p class="mt-4 text-sm" style="color: var(--hint-color);"><a href="https://t.me/LiraKurdi" target="_blank" class="underline" data-lang="sponsor_contact">Sponsor olmak için iletişime geçiniz.</a></p><button id="closeSponsorsButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-secondary" data-lang="close_button">KAPAT</button></div></div>
     </div>
     
@@ -146,7 +144,7 @@
         try {
             const translations = {
                 en: {
-                    start_button: "START", how_to_play_button: "How to Play", settings_button: "Settings", sponsors_button: "Sponsors", score: "Score", high_score: "High Score", paused_title: "Paused", resume_button: "RESUME", restart_button: "RESTART", menu_button: "MENU", game_over_title: "Game Over", try_again_button: "TRY AGAIN", level_up_title: "LEVEL UP!", continue_button: "CONTINUE", settings_title: "Settings", language_label: "Language", visuals_label: "Visuals", gameplay_label: "Gameplay", theme_label: "Theme", pin_color_label: "Arrow Color", circle_style_label: "Circle Style", background_style_label: "Background", pin_placement_label: "Arrow Placement", particle_effect_label: "Particle Effect", sfx_label: "Sound Effects", vibration_label: "Vibration", close_button: "CLOSE", how_to_play_title: "How to Play", tutorial_basics_title: "Basics", tutorial_basics_1: "Tap the screen to shoot arrows at the rotating circle.", tutorial_basics_2: "Don't hit other arrows or obstacles.", tutorial_basics_3: "Successfully place all arrows to clear the level.", tutorial_powerups_title: "Power-ups", tutorial_powerups_1: "<b>Bomb:</b> Clears nearby arrows on impact.", tutorial_powerups_2: "<b>Shield:</b> Protects you from your next collision.", tutorial_powerups_3: "<b>Slow-Mo:</b> Temporarily slows down the circle's rotation.", tutorial_powerups_4: "<b>Multiplier:</b> Increases points earned for a short time.", got_it_button: "GOT IT", sponsors_title: "Sponsors", sponsor_contact: "To become a sponsor, please contact us.", preview_label: "Preview", lang_tr: "Turkish", lang_en: "English", lang_ku: "Kurdish",
+                    start_button: "START", how_to_play_button: "How to Play", settings_button: "Settings", sponsors_button: "Sponsors", score: "Score", high_score: "High Score", paused_title: "Paused", resume_button: "RESUME", restart_button: "RESTART", menu_button: "MENU", game_over_title: "Game Over", try_again_button: "TRY AGAIN", level_up_title: "LEVEL UP!", continue_button: "CONTINUE", settings_title: "Settings", language_label: "Language", visuals_label: "Visuals", gameplay_label: "Gameplay", theme_label: "Theme", pin_color_label: "Pin Color", circle_style_label: "Circle Style", background_style_label: "Background", pin_placement_label: "Pin Placement", particle_effect_label: "Particle Effect", sfx_label: "Sound Effects", vibration_label: "Vibration", close_button: "CLOSE", how_to_play_title: "How to Play", tutorial_basics_title: "Basics", tutorial_basics_1: "Tap the screen to shoot pins at the rotating circle.", tutorial_basics_2: "Don't hit other pins or obstacles.", tutorial_basics_3: "Successfully place all pins to clear the level.", tutorial_powerups_title: "Power-ups", tutorial_powerups_1: "<b>Bomb:</b> Clears nearby pins on impact.", tutorial_powerups_2: "<b>Shield:</b> Protects you from your next collision.", tutorial_powerups_3: "<b>Slow-Mo:</b> Temporarily slows down the circle's rotation.", tutorial_powerups_4: "<b>Multiplier:</b> Increases points earned for a short time.", got_it_button: "GOT IT", sponsors_title: "Sponsors", sponsor_contact: "To become a sponsor, please contact us.", preview_label: "Preview", lang_tr: "Turkish", lang_en: "English", lang_ku: "Kurdish",
                     feedback_practice: "Keep practicing, you'll get the hang of it!", feedback_accuracy: "Incredible accuracy! You're a natural.", feedback_combo: "Amazing combo streak! You've got great rhythm.", feedback_anticipate: "Try to anticipate the circle's movement more.", feedback_effort: "Great effort! You're getting better with each game.",
                     theme_light: "Light", theme_dark: "Dark", theme_synthwave: "Synthwave", theme_forest: "Forest", theme_ocean: "Ocean", theme_fire_ice: "Fire & Ice",
                     pin_default: "Default", pin_blue: "Blue", pin_red: "Red", pin_green: "Green", pin_yellow: "Yellow", pin_pink: "Pink",
@@ -156,7 +154,7 @@
                     particle_spark: "Sparks", particle_bubble: "Bubbles"
                 },
                 tr: {
-                    start_button: "BAŞLA", how_to_play_button: "Nasıl Oynanır", settings_button: "Ayarlar", sponsors_button: "Sponsorlar", score: "Skor", high_score: "Yüksek Skor", paused_title: "Duraklatıldı", resume_button: "DEVAM ET", restart_button: "YENİDEN BAŞLA", menu_button: "MENÜ", game_over_title: "Oyun Bitti", try_again_button: "TEKRAR DENE", level_up_title: "SEVİYE ATLANDI!", continue_button: "DEVAM ET", settings_title: "Ayarlar", language_label: "Dil", visuals_label: "Görsel Ayarlar", gameplay_label: "Oynanış", theme_label: "Tema", pin_color_label: "Ok Rengi", circle_style_label: "Çember Stili", background_style_label: "Arkaplan", pin_placement_label: "Ok Yerleşimi", particle_effect_label: "Parçacık Efekti", sfx_label: "Ses Efektleri", vibration_label: "Titreşim", close_button: "KAPAT", how_to_play_title: "Nasıl Oynanır", tutorial_basics_title: "Temel Kurallar", tutorial_basics_1: "Dönen çembere okları fırlatmak için ekrana dokun.", tutorial_basics_2: "Diğer oklara veya engellere çarpma.", tutorial_basics_3: "Seviyeyi geçmek için tüm okları başarıyla yerleştir.", tutorial_powerups_title: "Güçlendirmeler", tutorial_powerups_1: "<b>Bomba:</b> Çarptığı yerdeki okları temizler.", tutorial_powerups_2: "<b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.", tutorial_powerups_3: "<b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.", tutorial_powerups_4: "<b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.", got_it_button: "ANLADIM", sponsors_title: "Sponsorlar", sponsor_contact: "Sponsor olmak için iletişime geçiniz.", preview_label: "Önizleme", lang_tr: "Türkçe", lang_en: "English", lang_ku: "Kurdî",
+                    start_button: "BAŞLA", how_to_play_button: "Nasıl Oynanır", settings_button: "Ayarlar", sponsors_button: "Sponsorlar", score: "Skor", high_score: "Yüksek Skor", paused_title: "Duraklatıldı", resume_button: "DEVAM ET", restart_button: "YENİDEN BAŞLA", menu_button: "MENÜ", game_over_title: "Oyun Bitti", try_again_button: "TEKRAR DENE", level_up_title: "SEVİYE ATLANDI!", continue_button: "DEVAM ET", settings_title: "Ayarlar", language_label: "Dil", visuals_label: "Görsel Ayarlar", gameplay_label: "Oynanış", theme_label: "Tema", pin_color_label: "Pin Rengi", circle_style_label: "Çember Stili", background_style_label: "Arkaplan", pin_placement_label: "Pin Yerleşimi", particle_effect_label: "Parçacık Efekti", sfx_label: "Ses Efektleri", vibration_label: "Titreşim", close_button: "KAPAT", how_to_play_title: "Nasıl Oynanır", tutorial_basics_title: "Temel Kurallar", tutorial_basics_1: "Dönen çembere pinleri fırlatmak için ekrana dokun.", tutorial_basics_2: "Diğer pinlere veya engellere çarpma.", tutorial_basics_3: "Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.", tutorial_powerups_title: "Güçlendirmeler", tutorial_powerups_1: "<b>Bomba:</b> Çarptığı yerdeki pinleri temizler.", tutorial_powerups_2: "<b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.", tutorial_powerups_3: "<b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.", tutorial_powerups_4: "<b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.", got_it_button: "ANLADIM", sponsors_title: "Sponsorlar", sponsor_contact: "Sponsor olmak için iletişime geçiniz.", preview_label: "Önizleme", lang_tr: "Türkçe", lang_en: "English", lang_ku: "Kurdî",
                     feedback_practice: "Pratik yapmaya devam et, alışacaksın!", feedback_accuracy: "İnanılmaz isabet! Doğuştan yeteneklisin.", feedback_combo: "Harika kombo serisi! Ritmin çok iyi.", feedback_anticipate: "Çemberin hareketini tahmin etmeye çalış.", feedback_effort: "Harika çaba! Her oyunda daha iyi oluyorsun.",
                     theme_light: "Açık", theme_dark: "Koyu", theme_synthwave: "Synthwave", theme_forest: "Orman", theme_ocean: "Okyanus", theme_fire_ice: "Ateş & Buz",
                     pin_default: "Varsayılan", pin_blue: "Mavi", pin_red: "Kırmızı", pin_green: "Yeşil", pin_yellow: "Sarı", pin_pink: "Pembe",
@@ -166,7 +164,7 @@
                     particle_spark: "Kıvılcım", particle_bubble: "Baloncuk"
                 },
                 ku: {
-                    start_button: "DESTPÊ BIKE", how_to_play_button: "Çawa Tê Lîstin", settings_button: "Mîhengan", sponsors_button: "Sponsoran", score: "Pûan", high_score: "Pûana Bilind", paused_title: "Hatek Rawestandin", resume_button: "DEWAM BIKE", restart_button: "JI NÛ VE DESTPÊ BIKE", menu_button: "MENÛ", game_over_title: "Lîstik Bi Dawî Bû", try_again_button: "DÎSA BICERIBÎNE", level_up_title: "AST DERBAS BÛ!", continue_button: "DEWAM BIKE", settings_title: "Mîhengan", language_label: "Ziman", visuals_label: "Mîhengên Dîtbarî", gameplay_label: "Lîstikvanî", theme_label: "Tema", pin_color_label: "Rengê Tîrê", circle_style_label: "Stîla Çemberê", background_style_label: "Paşxan", pin_placement_label: "Cihê Tîrê", particle_effect_label: "Efekta Parçeyan", sfx_label: "Efektên Dengî", vibration_label: "Vibrasyon", close_button: "BIGIRE", how_to_play_title: "Çawa Tê Lîstin", tutorial_basics_title: "Rêgezên Bingehîn", tutorial_basics_1: "Ji bo avêtina tîran li çembera zivirî, li ekranê bixe.", tutorial_basics_2: "Li tîrên din an astengan nexe.", tutorial_basics_3: "Ji bo derbaskirina astê, hemî tîran bi serfirazî bi cih bike.", tutorial_powerups_title: "Hêzdarî", tutorial_powerups_1: "<b>Bumbe:</b> Tîrên nêzîk li cihê lêdanê paqij dike.", tutorial_powerups_2: "<b>Mertal:</b> Te ji lêdana paşîn diparêze.", tutorial_powerups_3: "<b>Hêdîkirin:</b> Zivirandina çemberê demkî hêdî dike.", tutorial_powerups_4: "<b>Zêdeker:</b> Pûanên ku ji bo demek kurt têne qezenc kirin zêde dike.", got_it_button: "FÊM KIR", sponsors_title: "Sponsoran", sponsor_contact: "Ji bo sponsoriyê, ji kerema xwe re têkilî daynin.", preview_label: "Pêşdîtin", lang_tr: "Tirkî", lang_en: "Îngilîzî", lang_ku: "Kurdî",
+                    start_button: "DESTPÊ BIKE", how_to_play_button: "Çawa Tê Lîstin", settings_button: "Mîhengan", sponsors_button: "Sponsoran", score: "Pûan", high_score: "Pûana Bilind", paused_title: "Hatek Rawestandin", resume_button: "DEWAM BIKE", restart_button: "JI NÛ VE DESTPÊ BIKE", menu_button: "MENÛ", game_over_title: "Lîstik Bi Dawî Bû", try_again_button: "DÎSA BICERIBÎNE", level_up_title: "AST DERBAS BÛ!", continue_button: "DEWAM BIKE", settings_title: "Mîhengan", language_label: "Ziman", visuals_label: "Mîhengên Dîtbarî", gameplay_label: "Lîstikvanî", theme_label: "Tema", pin_color_label: "Rengê Pînê", circle_style_label: "Stîla Çemberê", background_style_label: "Paşxan", pin_placement_label: "Cihê Pînê", particle_effect_label: "Efekta Parçeyan", sfx_label: "Efektên Dengî", vibration_label: "Vibrasyon", close_button: "BIGIRE", how_to_play_title: "Çawa Tê Lîstin", tutorial_basics_title: "Rêgezên Bingehîn", tutorial_basics_1: "Ji bo avêtina pîneyan li çembera zivirî, li ekranê bixe.", tutorial_basics_2: "Li pînên din an astengan nexe.", tutorial_basics_3: "Ji bo derbaskirina astê, hemî pîneyan bi serfirazî bi cih bike.", tutorial_powerups_title: "Hêzdarî", tutorial_powerups_1: "<b>Bumbe:</b> Pînên nêzîk li cihê lêdanê paqij dike.", tutorial_powerups_2: "<b>Mertal:</b> Te ji lêdana paşîn diparêze.", tutorial_powerups_3: "<b>Hêdîkirin:</b> Zivirandina çemberê demkî hêdî dike.", tutorial_powerups_4: "<b>Zêdeker:</b> Pûanên ku ji bo demek kurt têne qezenc kirin zêde dike.", got_it_button: "FÊM KIR", sponsors_title: "Sponsoran", sponsor_contact: "Ji bo sponsoriyê, ji kerema xwe re têkilî daynin.", preview_label: "Pêşdîtin", lang_tr: "Tirkî", lang_en: "Îngilîzî", lang_ku: "Kurdî",
                     feedback_practice: "Werzîşê bidomîne, tu yê jê fêr bibî!", feedback_accuracy: "Lêdaneke bêbawer! Tu jêhatî yî.", feedback_combo: "Rêzeya komboyê ya ecêb! Rîtma te pir baş e.", feedback_anticipate: "Hewl bide ku tevgera çemberê texmîn bikî.", feedback_effort: "Hewldaneke mezin! Tu di her lîstikê de çêtir dibî.",
                     theme_light: "Ronahî", theme_dark: "Tarî", theme_synthwave: "Synthwave", theme_forest: "Daristan", theme_ocean: "Okyanûs", theme_fire_ice: "Agir & Cemed",
                     pin_default: "Standart", pin_blue: "Şîn", pin_red: "Sor", pin_green: "Kesk", pin_yellow: "Zer", pin_pink: "Pembe",
@@ -184,7 +182,7 @@
             const pinPlacements = { inside: 'pin_placement_inside', edge: 'pin_placement_edge' };
             const particleStyles = { spark: 'particle_spark', bubble: 'particle_bubble' };
 
-            let gameSettings = { language: 'tr', theme: 'light', sound: true, vibration: true, pinColor: 'default', circleStyle: 'default', backgroundStyle: 'plain', pinPlacement: 'inside', particleStyle: 'spark' };
+            let gameSettings = { language: 'tr', theme: 'light', sound: true, vibration: true, pinColor: 'default', circleStyle: 'default', backgroundStyle: 'plain', pinPlacement: 'edge', particleStyle: 'spark' };
 
             const populateSelector = (selectorId, data) => {
                 const selector = document.getElementById(selectorId);
@@ -243,7 +241,7 @@
             class AdaptiveLevelManager { constructor(){this.resetForNewGame()}updateStats(t,e,s){this.playerStats.totalPins++,this.playerStats.successfulPins++,this.playerStats.avgPinTime=(this.playerStats.avgPinTime*(this.playerStats.successfulPins-1)+t)/this.playerStats.successfulPins,e&&this.playerStats.closeCalls++,s&&this.playerStats.combos++}resetForNewGame(){this.playerStats={totalPins:0,successfulPins:0,avgPinTime:5,closeCalls:0,combos:0},this.levelHistory=[]}getAccuracy(){return this.playerStats.totalPins>0?this.playerStats.successfulPins/this.playerStats.totalPins:1}getLevelData(t){if(t<=3)return[{pins:6,speed:.004,pChance:.1,dChanges:0,obstacles:0},{pins:8,speed:.0045,pChance:.15,dChanges:0,obstacles:0},{pins:10,speed:.005,pChance:.2,dChanges:1,obstacles:0}][t-1];const e=this.getAccuracy(),s=this.levelHistory[this.levelHistory.length-1]||{pins:10,speed:.005,pChance:.2,dChanges:0,obstacles:0};let i=s.speed;e>.95&&this.playerStats.avgPinTime<3?i*=1.08:e<.8&&(i*=.92);let o=s.pins;e>.9?o+=Math.ceil(2*Math.random()):e<.85&&o>8&&o--;let a=s.dChanges;t>5&&e>.92&&(a+=Math.random()<.3?1:0);let n=s.obstacles;t>8&&e>.95&&(n+=Math.random()<.2?1:0);const r=t%10==0;r&&(i*=1.1,o+=3,n=Math.max(1,n),a=Math.max(2,a));const l={pins:Math.floor(Math.min(Math.max(8,o),40)),speed:Math.min(Math.max(.003,i),.02),pChance:Math.min(.2+.02*t,.8),dChanges:Math.floor(Math.min(a,5)),obstacles:Math.floor(Math.min(n,3)),isBoss:r};return this.levelHistory.push(l),l}}
 
             const GAME_SKILLS = { SLOW: { type: 'slow', duration: 500, color: '#FBBC05', icon: '⏱️' }, SHIELD: { type: 'shield', duration: 1, color: '#4285F4', icon: '🛡️' }, MULTIPLIER: { type: 'multiplier', duration: 400, color: '#EA4335', icon: '✨' }, BOMB: { type: 'bomb', duration: 1, color: '#202124', icon: '💣' } };
-            const CONFIG = { PHYSICS: { PIN_LENGTH_RATIO: 0.15, PIN_FLY_SPEED: 35, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48, PIN_OFFSET_FROM_EDGE: 5 }, GAME: { SCORE_PER_PIN: 10, BONUS_MULTIPLIER: 2.5, COMBO_TIME_LIMIT: 60, COMBO_BONUS_SCORE: 5 } };
+            const CONFIG = { PHYSICS: { PIN_LENGTH_RATIO: 0.2, PIN_HEAD_RADIUS_RATIO: 0.04, PIN_FLY_SPEED: 35, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48 }, GAME: { SCORE_PER_PIN: 10, BONUS_MULTIPLIER: 2.5, COMBO_TIME_LIMIT: 60, COMBO_BONUS_SCORE: 5 } };
 
             class AAGame {
                 constructor() {
@@ -432,7 +430,8 @@
                     if (!this.currentPin?.isFlying) return;
 
                     const pinLength = this.circleRadius * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
-                    const pinTipY = this.currentPin.y - pinLength - (gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0);
+                    const pinHeadRadius = this.circleRadius * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
+                    const pinTipY = this.currentPin.y - pinLength - pinHeadRadius;
                     
                     if (pinTipY <= this.center.y + this.circleRadius) {
                         this.currentPin.isFlying = false;
@@ -520,20 +519,21 @@
                     ctx.clearRect(0, 0, logicalWidth, logicalHeight);
                     
                     this.drawBackground(ctx, logicalWidth, logicalHeight);
+                    
+                    const center = isPreview ? { x: logicalWidth/2, y: logicalHeight/2 } : this.center;
+                    const radius = isPreview ? logicalWidth * 0.35 : this.circleRadius;
+
+                    this.drawCircle(ctx, center, radius);
 
                     if (isPreview) {
-                        const previewCenter = { x: logicalWidth / 2, y: logicalHeight / 2 };
-                        const previewRadius = logicalWidth * 0.35;
-                        this.drawCircle(ctx, previewCenter, previewRadius);
-                        this.drawPin(ctx, Math.PI / 2, null, previewCenter, previewRadius);
-                        this.drawPin(ctx, Math.PI, null, previewCenter, previewRadius);
+                        this.drawPin(ctx, Math.PI / 2, null, center, radius);
+                        this.drawPin(ctx, Math.PI, null, center, radius);
                     } else {
-                        this.drawCircle(this.ctx, this.center, this.circleRadius);
                         this.drawObstacles();
-                        this.pinsOnCircle.forEach(p => this.drawPin(this.ctx, p.angle, null, this.center, this.circleRadius));
+                        this.pinsOnCircle.forEach(p => this.drawPin(ctx, p.angle, null, center, radius));
                         this.powerUpsOnCircle.forEach(p => this.drawPowerUpOnCircle(p));
-                        if (this.currentPin) this.drawPin(this.ctx, null, this.currentPin.y, this.center, this.circleRadius);
-                        if (this.activePowerUps.shield) { this.ctx.beginPath(); this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 10, 0, 2 * Math.PI); this.ctx.strokeStyle = GAME_SKILLS.SHIELD.color; this.ctx.lineWidth = 4; this.ctx.stroke(); }
+                        if (this.currentPin) this.drawPin(ctx, null, this.currentPin.y, center, radius);
+                        if (this.activePowerUps.shield) { this.ctx.beginPath(); this.ctx.arc(center.x, center.y, radius + 10, 0, 2 * Math.PI); this.ctx.strokeStyle = GAME_SKILLS.SHIELD.color; this.ctx.lineWidth = 4; this.ctx.stroke(); }
                         this.drawParticles();
                     }
                 }
@@ -581,7 +581,7 @@
                     }
                     ctx.restore(); 
 
-                    if (this.circle.isBoss && !isPreview) {
+                    if (this.circle.isBoss && !ctx.isPreview) {
                         ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
                         ctx.strokeStyle = '#EF4444'; ctx.lineWidth = 4;
                         ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 200) * 0.4;
@@ -601,50 +601,57 @@
                         this.ctx.globalAlpha = 1;
                     });
                 }
-                drawPowerUpOnCircle(p) { const t=p.angle+this.circle.angle,e=this.center.x+Math.cos(t)*this.circleRadius,s=this.center.y+Math.sin(t)*this.circleRadius, pinHeadRadius = this.circleRadius * 0.018; this.ctx.font=`${2.5*pinHeadRadius}px Arial`,this.ctx.textAlign="center",this.ctx.textBaseline="middle",this.ctx.fillText(p.icon,e,s)}
+
+                drawPowerUpOnCircle(p) { const t=p.angle+this.circle.angle,e=this.center.x+Math.cos(t)*this.circleRadius,s=this.center.y+Math.sin(t)*this.circleRadius, pinHeadRadius = this.circleRadius * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO; this.ctx.font=`${2.5*pinHeadRadius}px Arial`,this.ctx.textAlign="center",this.ctx.textBaseline="middle",this.ctx.fillText(p.icon,e,s)}
 
                 drawPin(ctx, angle, yPos, center, radius) {
                     ctx.save();
                     const pinColor = this.getPinColor();
-                    const pinLineStart = gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0;
                     const pinLength = radius * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
-                    const arrowWidth = pinLength * 0.4;
-                    const arrowHeadSize = pinLength * 0.5;
+                    const pinHeadRadius = radius * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
 
-                    const drawArrow = () => {
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0); // Tail center
-                        ctx.lineTo(0, -pinLength + arrowHeadSize); // Shaft
-                        ctx.lineTo(-arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base left
-                        ctx.lineTo(0, -pinLength); // Arrow tip
-                        ctx.lineTo(arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base right
-                        ctx.lineTo(0, -pinLength + arrowHeadSize);
-                        ctx.closePath();
-
-                        ctx.fillStyle = pinColor;
-                        ctx.strokeStyle = pinColor;
-                        ctx.lineWidth = 2;
-                        
-                        ctx.shadowColor = pinColor;
-                        ctx.shadowBlur = 10;
-                        
-                        ctx.fill();
-                        ctx.stroke();
-                    };
-
+                    ctx.strokeStyle = pinColor;
+                    ctx.fillStyle = pinColor;
+                    ctx.lineWidth = 3;
+                    ctx.shadowColor = pinColor;
+                    ctx.shadowBlur = 10;
+                    
                     if (angle !== null) { // Attached pin
                         ctx.translate(center.x, center.y);
                         ctx.rotate(angle + (this.circle.angle || 0));
-                        ctx.translate(radius - pinLineStart, 0);
-                        ctx.rotate(Math.PI); // Point inwards
-                        drawArrow();
+
+                        let lineStart, lineEnd, headCenter;
+                        if (gameSettings.pinPlacement === 'inside') {
+                            lineStart = radius;
+                            lineEnd = radius - pinLength;
+                            headCenter = radius - pinLength;
+                        } else { // 'edge'
+                            lineStart = radius;
+                            lineEnd = radius + pinLength;
+                            headCenter = radius + pinLength;
+                        }
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(lineStart, 0);
+                        ctx.lineTo(lineEnd, 0);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(headCenter, 0, pinHeadRadius, 0, 2 * Math.PI);
+                        ctx.fill();
                     } else { // Flying or waiting pin
-                        ctx.translate(center.x, yPos);
-                        drawArrow();
+                        ctx.beginPath();
+                        ctx.moveTo(center.x, yPos);
+                        ctx.lineTo(center.x, yPos - pinLength);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(center.x, yPos - pinLength, pinHeadRadius, 0, 2 * Math.PI);
+                        ctx.fill();
                     }
-                    
                     ctx.restore();
                 }
+
 
                 drawParticles() { this.particles.forEach(p => { this.ctx.globalAlpha = p.life / 60; this.ctx.fillStyle = p.color; this.ctx.beginPath(); if (p.type === 'bubble') { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.stroke(); } else { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.fill(); } }); this.ctx.globalAlpha = 1; }
                 
@@ -671,6 +678,7 @@
                     this.previewCanvas.width = size * dpr;
                     this.previewCanvas.height = size * dpr;
                     this.previewCtx.scale(dpr, dpr);
+                    this.previewCtx.isPreview = true;
                     
                     const drawLoop = () => {
                         this.draw(true);
