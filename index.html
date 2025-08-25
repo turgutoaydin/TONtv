@@ -1,696 +1,785 @@
-<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>AA Game by @liraKurdi</title>
-    
+    <html lang="tr">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<style>
+    :root {
+        --bg-color: #F0F2F5; --secondary-bg-color: #FFFFFF; --text-color: #1f2937; --hint-color: #6b7280;
+        --button-bg-start: #4f46e5; --button-bg-end: #7c3aed; --button-text-color: #ffffff;
+        --border-color: #e5e7eb; --pause-bg-color: rgba(240, 242, 245, 0.7);
+        --circle-color-start: #FFFFFF; --circle-color-end: #e5e7eb;
+    }
+    html.dark {
+        --bg-color: #121212; --secondary-bg-color: #1e1e1e; --text-color: #EAEAEA; --hint-color: #A0A0A0;
+        --border-color: #373737; --pause-bg-color: rgba(18, 18, 18, 0.7);
+        --circle-color-start: #2a2a2a; --circle-color-end: #3c3c3c;
+    }
+    html.synthwave {
+        --bg-color: #1a0a3b; --secondary-bg-color: #2a104a; --text-color: #f0e6ff; --hint-color: #a78bfa;
+        --button-bg-start: #ff00c1; --button-bg-end: #00e5ff; --button-text-color: #ffffff;
+        --border-color: #5b21b6; --pause-bg-color: rgba(42, 16, 74, 0.7);
+        --circle-color-start: #3a1c61; --circle-color-end: #4c2a85;
+    }
+    html.forest {
+        --bg-color: #f0fff4; --secondary-bg-color: #ffffff; --text-color: #14532d; --hint-color: #4ade80;
+        --button-bg-start: #16a34a; --button-bg-end: #65a30d; --button-text-color: #ffffff;
+        --border-color: #bbf7d0; --pause-bg-color: rgba(240, 255, 244, 0.7);
+        --circle-color-start: #dcfce7; --circle-color-end: #f0fdf4;
+    }
+    html.ocean {
+        --bg-color: #e0f2fe; --secondary-bg-color: #ffffff; --text-color: #0c4a6e; --hint-color: #38bdf8;
+        --button-bg-start: #0ea5e9; --button-bg-end: #0284c7; --button-text-color: #ffffff;
+        --border-color: #bae6fd; --pause-bg-color: rgba(224, 242, 254, 0.7);
+        --circle-color-start: #f0f9ff; --circle-color-end: #e0f2fe;
+    }
+    html.fire-ice {
+        --bg-color: #111827; --secondary-bg-color: #1f2937; --text-color: #f9fafb; --hint-color: #9ca3af;
+        --button-bg-start: #f97316; --button-bg-end: #3b82f6; --button-text-color: #ffffff;
+        --border-color: #4b5563; --pause-bg-color: rgba(17, 24, 39, 0.7);
+        --circle-color-start: #374151; --circle-color-end: #4b5563;
+    }
+
+    body { font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; background-color: var(--bg-color); transition: background-color 0.3s ease; }
+    #gameCanvas { display: block; touch-action: none; transition: transform 0.1s ease-out; }
+    .screen { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: scale(0.95); opacity: 0; pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .screen.active { transform: scale(1); opacity: 1; pointer-events: all; }
+    .powerUpBadge { transition: all 0.3s ease; transform: scale(0.8); opacity: 0; }
+    .powerUpBadge.active { transform: scale(1); opacity: 1; }
+    @keyframes pulse-quick { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    .animate-pulse-quick { animation: pulse-quick 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+    .btn-primary { background-image: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end)); color: var(--button-text-color); transition: all 0.2s ease-in-out; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.2); }
+    .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.3); }
+    .btn-primary:active { transform: translateY(0) scale(0.98); }
+    .btn-secondary { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
+    .btn-secondary:hover { background-color: var(--secondary-bg-color); border-color: var(--button-bg-start); color: var(--button-bg-start); }
+    #language-dropdown { transition: all 0.2s ease-in-out; transform-origin: top right; z-index: 100; }
+
+    @media (max-height: 600px) {
+        #uiOverlay { top: 1rem; padding-left: 1rem; padding-right: 1rem; }
+        #progressContainer { top: 3.5rem; }
+        #pauseButton, #powerUpIndicator { bottom: 1rem; }
+        .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-5xl { font-size: 2rem; line-height: 2.25rem; }
+    }
+</style>
+
+<div id="gameContainer" class="relative w-full h-screen flex flex-col items-center justify-center p-4">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <div id="game-hud" class="absolute inset-0 pointer-events-none z-20" style="display: none;">
+        <div id="uiOverlay" class="absolute top-6 w-full max-w-lg mx-auto flex justify-between items-end px-6 z-10">
+            <div class="text-left"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="score">Score</div><div id="scoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
+            <div class="absolute left-1/2 -translate-x-1/2 text-center"><div id="levelValue" class="font-bold text-5xl leading-none" style="color: var(--text-color);">1</div></div>
+            <div class="text-right"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="high_score">High Score</div><div id="highScoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
+        </div>
+        <div id="progressContainer" class="absolute top-20 w-1/2 max-w-xs left-1/2 -translate-x-1/2 h-1.5 rounded-full z-10" style="background-color: var(--border-color);"><div id="progressBar" class="h-full rounded-full transition-all duration-300" style="background-image: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end));"></div></div>
+        
+        <button id="pauseButton" class="absolute bottom-5 left-5 p-2 rounded-full pointer-events-auto transition-opacity hover:opacity-75">
+            <svg style="color: var(--text-color);" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 24a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1z"/></svg>
+        </button>
+        <div id="powerUpIndicator" class="absolute bottom-5 right-5 flex gap-3"></div>
+    </div>
 
-    <style>
-        :root {
-            --bg-color: #F0F2F5; --secondary-bg-color: #FFFFFF; --text-color: #1f2937; --hint-color: #6b7280;
-            --button-bg-start: #4f46e5; --button-bg-end: #7c3aed; --button-text-color: #ffffff;
-            --border-color: #e5e7eb; --pause-bg-color: rgba(240, 242, 245, 0.7);
-            --circle-color-start: #FFFFFF; --circle-color-end: #e5e7eb;
-        }
-        html.dark {
-            --bg-color: #121212; --secondary-bg-color: #1e1e1e; --text-color: #EAEAEA; --hint-color: #A0A0A0;
-            --border-color: #373737; --pause-bg-color: rgba(18, 18, 18, 0.7);
-            --circle-color-start: #2a2a2a; --circle-color-end: #3c3c3c;
-        }
-        html.synthwave {
-            --bg-color: #1a0a3b; --secondary-bg-color: #2a104a; --text-color: #f0e6ff; --hint-color: #a78bfa;
-            --button-bg-start: #ff00c1; --button-bg-end: #00e5ff; --button-text-color: #ffffff;
-            --border-color: #5b21b6; --pause-bg-color: rgba(42, 16, 74, 0.7);
-            --circle-color-start: #3a1c61; --circle-color-end: #4c2a85;
-        }
-        html.forest {
-            --bg-color: #f0fff4; --secondary-bg-color: #ffffff; --text-color: #14532d; --hint-color: #4ade80;
-            --button-bg-start: #16a34a; --button-bg-end: #65a30d; --button-text-color: #ffffff;
-            --border-color: #bbf7d0; --pause-bg-color: rgba(240, 255, 244, 0.7);
-            --circle-color-start: #dcfce7; --circle-color-end: #f0fdf4;
-        }
-        html.ocean {
-            --bg-color: #e0f2fe; --secondary-bg-color: #ffffff; --text-color: #0c4a6e; --hint-color: #38bdf8;
-            --button-bg-start: #0ea5e9; --button-bg-end: #0284c7; --button-text-color: #ffffff;
-            --border-color: #bae6fd; --pause-bg-color: rgba(224, 242, 254, 0.7);
-            --circle-color-start: #f0f9ff; --circle-color-end: #e0f2fe;
-        }
-        html.fire-ice {
-            --bg-color: #111827; --secondary-bg-color: #1f2937; --text-color: #f9fafb; --hint-color: #9ca3af;
-            --button-bg-start: #f97316; --button-bg-end: #3b82f6; --button-text-color: #ffffff;
-            --border-color: #4b5563; --pause-bg-color: rgba(17, 24, 39, 0.7);
-            --circle-color-start: #374151; --circle-color-end: #4b5563;
-        }
+    <canvas id="gameCanvas"></canvas>
 
-        body { font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: manipulation; background-color: var(--bg-color); transition: background-color 0.3s ease; }
-        #gameCanvas { display: block; touch-action: none; transition: transform 0.1s ease-out; }
-        .screen { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: scale(0.95); opacity: 0; pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .screen.active { transform: scale(1); opacity: 1; pointer-events: all; }
-        .powerUpBadge { transition: all 0.3s ease; transform: scale(0.8); opacity: 0; }
-        .powerUpBadge.active { transform: scale(1); opacity: 1; }
-        @keyframes pulse-quick { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-        .animate-pulse-quick { animation: pulse-quick 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
-        .btn-primary { background-image: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end)); color: var(--button-text-color); transition: all 0.2s ease-in-out; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.2); }
-        .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.3); }
-        .btn-primary:active { transform: translateY(0) scale(0.98); }
-        .btn-secondary { background-color: transparent; border: 2px solid var(--border-color); color: var(--text-color); transition: all 0.2s ease-in-out; }
-        .btn-secondary:hover { background-color: var(--secondary-bg-color); border-color: var(--button-bg-start); color: var(--button-bg-start); }
-        #language-dropdown { transition: all 0.2s ease-in-out; transform-origin: top right; z-index: 100; }
-    </style>
-</head>
+    <div id="gameFeedback" class="absolute top-1/3 text-4xl font-extrabold transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none z-20" style="color: var(--button-bg-start);"></div>
+    
+    <!-- --- SCREENS --- -->
+    <div class="screen z-50 active" id="startScreen" style="backdrop-filter: none;">
+        <div class="relative w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);">
+            <div class="absolute top-4 right-4 z-50">
+                <button id="language-button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg style="color: var(--text-color);" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m0 0a9 9 0 019-9m-9 9a9 9 0 009 9"></path></svg>
+                </button>
+                <div id="language-dropdown" class="absolute right-0 mt-2 w-32 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden" style="background-color: var(--secondary-bg-color); transform: scale(0.9); opacity: 0;">
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="tr">🇹🇷<span data-lang="lang_tr">Türkçe</span></a>
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="en">🇬🇧<span data-lang="lang_en">English</span></a>
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="ku">☀️<span data-lang="lang_ku">Kurdî</span></a>
+                </div>
+            </div>
+            <img id="logo" src="assets/images/logo.png" alt="AA Game Logo" class="w-28 h-28 mx-auto mb-4" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+            <div id="logo-fallback" style="display:none;" class="w-28 h-28 mx-auto mb-4 flex items-center justify-center rounded-full" style="background-color: var(--button-bg-start);"><span class="text-5xl font-extrabold" style="color: var(--button-text-color);">AA</span></div>
+            <p class="mb-8 font-semibold text-lg" style="color: var(--text-color);"><span data-lang="high_score">High Score</span>: <span id="menuHighScoreValue">0</span></p>
+            <div class="flex flex-col gap-4">
+                <button id="startButton" class="w-full text-lg font-bold py-3.5 rounded-xl btn-primary" data-lang="start_button">BAŞLA</button>
+                <div class="grid grid-cols-2 gap-3">
+                     <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="how_to_play_button">Nasıl Oynanır</button>
+                     <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="settings_button">Ayarlar</button>
+                </div>
+                <button id="sponsorsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="sponsors_button">Sponsorlar</button>
+            </div>
+            <div class="mt-8 text-xs" style="color: var(--hint-color);"><span>Version 1.2.0</span></div>
+        </div>
+    </div>
+
+    <div class="screen z-50" id="pauseScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-8" style="color: var(--text-color);" data-lang="paused_title">Duraklatıldı</h1><div class="flex flex-col gap-3"><button id="resumeButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="resume_button">DEVAM ET</button><button id="pauseRestartButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="restart_button">YENİDEN BAŞLA</button><button id="pauseMenuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
+    <div class="screen z-50" id="gameOverScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-4" style="color: var(--text-color);" data-lang="game_over_title">Oyun Bitti</h1><div class="space-y-2 mb-6 text-lg" style="color: var(--text-color);"><p><span data-lang="score">Score</span>: <strong id="finalScoreText" class="font-bold">0</strong></p><p><span data-lang="high_score">High Score</span>: <strong id="highScoreText" class="font-bold">0</strong></p></div><p id="gameOverFeedback" class="text-sm mb-8 h-8" style="color: var(--hint-color);"></p><div class="flex flex-col gap-3"><button id="restartButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="try_again_button">TEKRAR DENE</button><button id="menuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
+    <div class="screen z-50" id="levelUpScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-2" style="color: var(--text-color);" data-lang="level_up_title">SEVİYE ATLANDI!</h1><p id="levelUpText" class="text-2xl font-medium mb-2" style="color: var(--hint-color);">Seviye 2</p><p id="levelUpHighScoreText" class="text-lg font-medium mb-8" style="color: var(--hint-color);">Yüksek Skor: 0</p><button id="continueButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="continue_button">DEVAM ET</button></div></div>
+
+    <div class="screen z-50" id="settingsScreen" style="backdrop-filter: none;">
+        <div class="w-full max-w-lg p-4 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);">
+            <h1 class="text-3xl font-extrabold mb-6 text-center" style="color: var(--text-color);" data-lang="settings_title">Ayarlar</h1>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1 space-y-4">
+                    <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="visuals_label">Görsel Ayarlar</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="themeSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="theme_label">Tema</label><select id="themeSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="pinColorSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_color_label">Pin Rengi</label><select id="pinColorSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="circleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="circle_style_label">Çember Stili</label><select id="circleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="backgroundStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="background_style_label">Arkaplan</label><select id="backgroundStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div></div></div>
+                    <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="gameplay_label">O
+                    
+                    </head>
 <body class="antialiased">
 
-    <div id="gameContainer" class="relative w-full h-screen flex flex-col items-center justify-center p-4">
-        
-        <div id="game-hud" class="absolute inset-0 pointer-events-none z-20" style="display: none;">
-            <div id="uiOverlay" class="absolute top-6 w-full max-w-lg mx-auto flex justify-between items-end px-6 z-10">
-                <div class="text-left"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="score">Score</div><div id="scoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
-                <div class="absolute left-1/2 -translate-x-1/2 text-center"><div id="levelValue" class="font-bold text-5xl leading-none" style="color: var(--text-color);">1</div></div>
-                <div class="text-right"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="high_score">High Score</div><div id="highScoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
-            </div>
-            <div id="progressContainer" class="absolute top-20 w-1/2 max-w-xs left-1/2 -translate-x-1/2 h-1.5 rounded-full z-10" style="background-color: var(--border-color);"><div id="progressBar" class="h-full rounded-full transition-all duration-300" style="background-image: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end));"></div></div>
-            
-            <button id="pauseButton" class="absolute bottom-5 left-5 p-2 rounded-full pointer-events-auto transition-opacity hover:opacity-75">
-                <svg style="color: var(--text-color);" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 24a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1z"/></svg>
-            </button>
-            <div id="powerUpIndicator" class="absolute bottom-5 right-5 flex gap-3"></div>
-        </div>
-
-        <canvas id="gameCanvas"></canvas>
-
-        <div id="gameFeedback" class="absolute top-1/3 text-4xl font-extrabold transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none z-20" style="color: var(--button-bg-start);"></div>
-        
-        <!-- --- SCREENS --- -->
-        <div class="screen z-50 active" id="startScreen" style="backdrop-filter: none;">
-            <div class="relative w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);">
-                <div class="absolute top-4 right-4 z-50">
-                    <button id="language-button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <svg style="color: var(--text-color);" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m0 0a9 9 0 019-9m-9 9a9 9 0 009 9"></path></svg>
-                    </button>
-                    <div id="language-dropdown" class="absolute right-0 mt-2 w-32 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden" style="background-color: var(--secondary-bg-color); transform: scale(0.9); opacity: 0;">
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="tr">🇹🇷<span data-lang="lang_tr">Türkçe</span></a>
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="en">🇬🇧<span data-lang="lang_en">English</span></a>
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="ku">☀️<span data-lang="lang_ku">Kurdî</span></a>
-                    </div>
-                </div>
-                <img id="logo" src="assets/images/logo.png" alt="AA Game Logo" class="w-28 h-28 mx-auto mb-4" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
-                <div id="logo-fallback" style="display:none;" class="w-28 h-28 mx-auto mb-4 flex items-center justify-center rounded-full" style="background-color: var(--button-bg-start);"><span class="text-5xl font-extrabold" style="color: var(--button-text-color);">AA</span></div>
-                <p class="mb-8 font-semibold text-lg" style="color: var(--text-color);"><span data-lang="high_score">High Score</span>: <span id="menuHighScoreValue">0</span></p>
-                <div class="flex flex-col gap-4">
-                    <button id="startButton" class="w-full text-lg font-bold py-3.5 rounded-xl btn-primary" data-lang="start_button">BAŞLA</button>
-                    <div class="grid grid-cols-2 gap-3">
-                         <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="how_to_play_button">Nasıl Oynanır</button>
-                         <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="settings_button">Ayarlar</button>
-                    </div>
-                    <button id="sponsorsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="sponsors_button">Sponsorlar</button>
-                </div>
-                <div class="mt-8 text-xs" style="color: var(--hint-color);"><span>Version 1.1.0</span></div>
-            </div>
-        </div>
-
-        <div class="screen z-50" id="pauseScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-8" style="color: var(--text-color);" data-lang="paused_title">Duraklatıldı</h1><div class="flex flex-col gap-3"><button id="resumeButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="resume_button">DEVAM ET</button><button id="pauseRestartButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="restart_button">YENİDEN BAŞLA</button><button id="pauseMenuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
-        <div class="screen z-50" id="gameOverScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-4" style="color: var(--text-color);" data-lang="game_over_title">Oyun Bitti</h1><div class="space-y-2 mb-6 text-lg" style="color: var(--text-color);"><p><span data-lang="score">Score</span>: <strong id="finalScoreText" class="font-bold">0</strong></p><p><span data-lang="high_score">High Score</span>: <strong id="highScoreText" class="font-bold">0</strong></p></div><p id="gameOverFeedback" class="text-sm mb-8 h-8" style="color: var(--hint-color);"></p><div class="flex flex-col gap-3"><button id="restartButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="try_again_button">TEKRAR DENE</button><button id="menuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
-        <div class="screen z-50" id="levelUpScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-2" style="color: var(--text-color);" data-lang="level_up_title">SEVİYE ATLANDI!</h1><p id="levelUpText" class="text-2xl font-medium mb-2" style="color: var(--hint-color);">Seviye 2</p><p id="levelUpHighScoreText" class="text-lg font-medium mb-8" style="color: var(--hint-color);">Yüksek Skor: 0</p><button id="continueButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="continue_button">DEVAM ET</button></div></div>
-
-        <div class="screen z-50" id="settingsScreen" style="backdrop-filter: none;">
-            <div class="w-full max-w-lg p-4 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);">
-                <h1 class="text-3xl font-extrabold mb-6 text-center" style="color: var(--text-color);" data-lang="settings_title">Ayarlar</h1>
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="flex-1 space-y-4">
-                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="visuals_label">Görsel Ayarlar</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="themeSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="theme_label">Tema</label><select id="themeSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="pinColorSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_color_label">Pin Rengi</label><select id="pinColorSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="circleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="circle_style_label">Çember Stili</label><select id="circleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="backgroundStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="background_style_label">Arkaplan</label><select id="backgroundStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div></div></div>
-                        <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="gameplay_label">Oynanış</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="pinPlacementSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_placement_label">Pin Yerleşimi</label><select id="pinPlacementSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="particleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="particle_effect_label">Parçacık Efekti</label><select id="particleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="sfx_label">Ses Efektleri</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="soundToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="vibration_label">Titreşim</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="vibrationToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div></div></div>
-                    </div>
-                    <div class="w-full md:w-48 flex-shrink-0">
-                        <div class="p-4 rounded-lg h-full flex flex-col" style="background-color: var(--bg-color);">
-                            <h2 class="text-lg font-bold mb-3 text-center" style="color: var(--text-color);" data-lang="preview_label">Önizleme</h2>
-                            <div class="flex-grow flex items-center justify-center min-h-[150px]"><canvas id="settingsPreviewCanvas" class="w-full h-auto aspect-square"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-                <button id="closeSettingsButton" class="mt-6 w-full font-bold py-3 rounded-xl btn-secondary" data-lang="close_button">KAPAT</button>
-            </div>
-        </div>
-
-        <div class="screen z-50" id="tutorialScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="how_to_play_title">Nasıl Oynanır</h1><div class="space-y-6"><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_basics_title">Temel Kurallar</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🎯</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_1">Dönen çembere pinleri fırlatmak için ekrana dokun.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💥</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_2">Diğer pinlere veya engellere çarpma.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">📈</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_3">Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.</p></div></div></div><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_powerups_title">Güçlendirmeler</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💣</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_1"><b>Bomba:</b> Çarptığı yerdeki pinleri temizler.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🛡️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_2"><b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">⏱️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_3"><b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">✨</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_4"><b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.</p></div></div></div></div><button id="backToMenuButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="got_it_button">ANLADIM</button></div></div>
-        <div class="screen z-50" id="sponsorsScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="sponsors_title">Sponsorlar</h1><a href="https://t.me/LiraKurdi" target="_blank" class="block p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"><div class="flex items-center"><span class="text-2xl mr-4">❤️</span><span class="font-semibold" style="color: var(--text-color);">@LiraKurdi</span></div></a><p class="mt-4 text-sm" style="color: var(--hint-color);"><a href="https://t.me/LiraKurdi" target="_blank" class="underline" data-lang="sponsor_contact">Sponsor olmak için iletişime geçiniz.</a></p><button id="closeSponsorsButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-secondary" data-lang="close_button">KAPAT</button></div></div>
-    </div>
+<div id="gameContainer" class="relative w-full h-screen flex flex-col items-center justify-center p-4">
     
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            const translations = {
-                en: {
-                    start_button: "START", how_to_play_button: "How to Play", settings_button: "Settings", sponsors_button: "Sponsors", score: "Score", high_score: "High Score", paused_title: "Paused", resume_button: "RESUME", restart_button: "RESTART", menu_button: "MENU", game_over_title: "Game Over", try_again_button: "TRY AGAIN", level_up_title: "LEVEL UP!", continue_button: "CONTINUE", settings_title: "Settings", language_label: "Language", visuals_label: "Visuals", gameplay_label: "Gameplay", theme_label: "Theme", pin_color_label: "Pin Color", circle_style_label: "Circle Style", background_style_label: "Background", pin_placement_label: "Pin Placement", particle_effect_label: "Particle Effect", sfx_label: "Sound Effects", vibration_label: "Vibration", close_button: "CLOSE", how_to_play_title: "How to Play", tutorial_basics_title: "Basics", tutorial_basics_1: "Tap the screen to shoot pins at the rotating circle.", tutorial_basics_2: "Don't hit other pins or obstacles.", tutorial_basics_3: "Successfully place all pins to clear the level.", tutorial_powerups_title: "Power-ups", tutorial_powerups_1: "<b>Bomb:</b> Clears nearby pins on impact.", tutorial_powerups_2: "<b>Shield:</b> Protects you from your next collision.", tutorial_powerups_3: "<b>Slow-Mo:</b> Temporarily slows down the circle's rotation.", tutorial_powerups_4: "<b>Multiplier:</b> Increases points earned for a short time.", got_it_button: "GOT IT", sponsors_title: "Sponsors", sponsor_contact: "To become a sponsor, please contact us.", preview_label: "Preview", lang_tr: "Turkish", lang_en: "English", lang_ku: "Kurdish",
-                    feedback_practice: "Keep practicing, you'll get the hang of it!", feedback_accuracy: "Incredible accuracy! You're a natural.", feedback_combo: "Amazing combo streak! You've got great rhythm.", feedback_anticipate: "Try to anticipate the circle's movement more.", feedback_effort: "Great effort! You're getting better with each game.",
-                    theme_light: "Light", theme_dark: "Dark", theme_synthwave: "Synthwave", theme_forest: "Forest", theme_ocean: "Ocean", theme_fire_ice: "Fire & Ice",
-                    pin_default: "Default", pin_blue: "Blue", pin_red: "Red", pin_green: "Green", pin_yellow: "Yellow", pin_pink: "Pink",
-                    circle_default: "Default", circle_neon: "Neon Ring", circle_techno: "Techno Pattern",
-                    background_plain: "Plain", background_starry: "Starry", background_geometric: "Geometric",
-                    pin_placement_inside: "Inside", pin_placement_edge: "On Edge",
-                    particle_spark: "Sparks", particle_bubble: "Bubbles"
-                },
-                tr: {
-                    start_button: "BAŞLA", how_to_play_button: "Nasıl Oynanır", settings_button: "Ayarlar", sponsors_button: "Sponsorlar", score: "Skor", high_score: "Yüksek Skor", paused_title: "Duraklatıldı", resume_button: "DEVAM ET", restart_button: "YENİDEN BAŞLA", menu_button: "MENÜ", game_over_title: "Oyun Bitti", try_again_button: "TEKRAR DENE", level_up_title: "SEVİYE ATLANDI!", continue_button: "DEVAM ET", settings_title: "Ayarlar", language_label: "Dil", visuals_label: "Görsel Ayarlar", gameplay_label: "Oynanış", theme_label: "Tema", pin_color_label: "Pin Rengi", circle_style_label: "Çember Stili", background_style_label: "Arkaplan", pin_placement_label: "Pin Yerleşimi", particle_effect_label: "Parçacık Efekti", sfx_label: "Ses Efektleri", vibration_label: "Titreşim", close_button: "KAPAT", how_to_play_title: "Nasıl Oynanır", tutorial_basics_title: "Temel Kurallar", tutorial_basics_1: "Dönen çembere pinleri fırlatmak için ekrana dokun.", tutorial_basics_2: "Diğer pinlere veya engellere çarpma.", tutorial_basics_3: "Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.", tutorial_powerups_title: "Güçlendirmeler", tutorial_powerups_1: "<b>Bomba:</b> Çarptığı yerdeki pinleri temizler.", tutorial_powerups_2: "<b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.", tutorial_powerups_3: "<b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.", tutorial_powerups_4: "<b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.", got_it_button: "ANLADIM", sponsors_title: "Sponsorlar", sponsor_contact: "Sponsor olmak için iletişime geçiniz.", preview_label: "Önizleme", lang_tr: "Türkçe", lang_en: "English", lang_ku: "Kurdî",
-                    feedback_practice: "Pratik yapmaya devam et, alışacaksın!", feedback_accuracy: "İnanılmaz isabet! Doğuştan yeteneklisin.", feedback_combo: "Harika kombo serisi! Ritmin çok iyi.", feedback_anticipate: "Çemberin hareketini tahmin etmeye çalış.", feedback_effort: "Harika çaba! Her oyunda daha iyi oluyorsun.",
-                    theme_light: "Açık", theme_dark: "Koyu", theme_synthwave: "Synthwave", theme_forest: "Orman", theme_ocean: "Okyanus", theme_fire_ice: "Ateş & Buz",
-                    pin_default: "Varsayılan", pin_blue: "Mavi", pin_red: "Kırmızı", pin_green: "Yeşil", pin_yellow: "Sarı", pin_pink: "Pembe",
-                    circle_default: "Varsayılan", circle_neon: "Neon Halka", circle_techno: "Tekno Desen",
-                    background_plain: "Sade", background_starry: "Yıldızlı", background_geometric: "Geometrik",
-                    pin_placement_inside: "İçeride", pin_placement_edge: "Kenarda",
-                    particle_spark: "Kıvılcım", particle_bubble: "Baloncuk"
-                },
-                ku: {
-                    start_button: "DESTPÊ BIKE", how_to_play_button: "Çawa Tê Lîstin", settings_button: "Mîhengan", sponsors_button: "Sponsoran", score: "Pûan", high_score: "Pûana Bilind", paused_title: "Hatek Rawestandin", resume_button: "DEWAM BIKE", restart_button: "JI NÛ VE DESTPÊ BIKE", menu_button: "MENÛ", game_over_title: "Lîstik Bi Dawî Bû", try_again_button: "DÎSA BICERIBÎNE", level_up_title: "AST DERBAS BÛ!", continue_button: "DEWAM BIKE", settings_title: "Mîhengan", language_label: "Ziman", visuals_label: "Mîhengên Dîtbarî", gameplay_label: "Lîstikvanî", theme_label: "Tema", pin_color_label: "Rengê Pînê", circle_style_label: "Stîla Çemberê", background_style_label: "Paşxan", pin_placement_label: "Cihê Pînê", particle_effect_label: "Efekta Parçeyan", sfx_label: "Efektên Dengî", vibration_label: "Vibrasyon", close_button: "BIGIRE", how_to_play_title: "Çawa Tê Lîstin", tutorial_basics_title: "Rêgezên Bingehîn", tutorial_basics_1: "Ji bo avêtina pîneyan li çembera zivirî, li ekranê bixe.", tutorial_basics_2: "Li pînên din an astengan nexe.", tutorial_basics_3: "Ji bo derbaskirina astê, hemî pîneyan bi serfirazî bi cih bike.", tutorial_powerups_title: "Hêzdarî", tutorial_powerups_1: "<b>Bumbe:</b> Pînên nêzîk li cihê lêdanê paqij dike.", tutorial_powerups_2: "<b>Mertal:</b> Te ji lêdana paşîn diparêze.", tutorial_powerups_3: "<b>Hêdîkirin:</b> Zivirandina çemberê demkî hêdî dike.", tutorial_powerups_4: "<b>Zêdeker:</b> Pûanên ku ji bo demek kurt têne qezenc kirin zêde dike.", got_it_button: "FÊM KIR", sponsors_title: "Sponsoran", sponsor_contact: "Ji bo sponsoriyê, ji kerema xwe re têkilî daynin.", preview_label: "Pêşdîtin", lang_tr: "Tirkî", lang_en: "Îngilîzî", lang_ku: "Kurdî",
-                    feedback_practice: "Werzîşê bidomîne, tu yê jê fêr bibî!", feedback_accuracy: "Lêdaneke bêbawer! Tu jêhatî yî.", feedback_combo: "Rêzeya komboyê ya ecêb! Rîtma te pir baş e.", feedback_anticipate: "Hewl bide ku tevgera çemberê texmîn bikî.", feedback_effort: "Hewldaneke mezin! Tu di her lîstikê de çêtir dibî.",
-                    theme_light: "Ronahî", theme_dark: "Tarî", theme_synthwave: "Synthwave", theme_forest: "Daristan", theme_ocean: "Okyanûs", theme_fire_ice: "Agir & Cemed",
-                    pin_default: "Standart", pin_blue: "Şîn", pin_red: "Sor", pin_green: "Kesk", pin_yellow: "Zer", pin_pink: "Pembe",
-                    circle_default: "Standart", circle_neon: "Xeleka Neon", circle_techno: "Nimûneya Tekno",
-                    background_plain: "Sade", background_starry: "Bi Stêrk", background_geometric: "Geometrîk",
-                    pin_placement_inside: "Hundur", pin_placement_edge: "Qerax",
-                    particle_spark: "Çirûsk", particle_bubble: "Bubik"
+    <div id="game-hud" class="absolute inset-0 pointer-events-none z-20" style="display: none;">
+        <div id="uiOverlay" class="absolute top-6 w-full max-w-lg mx-auto flex justify-between items-end px-6 z-10">
+            <div class="text-left"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="score">Score</div><div id="scoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
+            <div class="absolute left-1/2 -translate-x-1/2 text-center"><div id="levelValue" class="font-bold text-5xl leading-none" style="color: var(--text-color);">1</div></div>
+            <div class="text-right"><div class="text-xs font-medium uppercase tracking-wider" style="color: var(--hint-color);" data-lang="high_score">High Score</div><div id="highScoreValue" class="font-semibold text-2xl" style="color: var(--text-color);">0</div></div>
+        </div>
+        <div id="progressContainer" class="absolute top-20 w-1/2 max-w-xs left-1/2 -translate-x-1/2 h-1.5 rounded-full z-10" style="background-color: var(--border-color);"><div id="progressBar" class="h-full rounded-full transition-all duration-300" style="background-image: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end));"></div></div>
+        
+        <button id="pauseButton" class="absolute bottom-5 left-5 p-2 rounded-full pointer-events-auto transition-opacity hover:opacity-75">
+            <svg style="color: var(--text-color);" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 24a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V1a1 1 0 0 1 2 0v22a1 1 0 0 1-1 1z"/></svg>
+        </button>
+        <div id="powerUpIndicator" class="absolute bottom-5 right-5 flex gap-3"></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="gameFeedback" class="absolute top-1/3 text-4xl font-extrabold transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none z-20" style="color: var(--button-bg-start);"></div>
+    
+    <!-- --- SCREENS --- -->
+    <div class="screen z-50 active" id="startScreen" style="backdrop-filter: none;">
+        <div class="relative w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);">
+            <div class="absolute top-4 right-4 z-50">
+                <button id="language-button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg style="color: var(--text-color);" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m0 0a9 9 0 019-9m-9 9a9 9 0 009 9"></path></svg>
+                </button>
+                <div id="language-dropdown" class="absolute right-0 mt-2 w-32 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden" style="background-color: var(--secondary-bg-color); transform: scale(0.9); opacity: 0;">
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="tr">🇹🇷<span data-lang="lang_tr">Türkçe</span></a>
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="en">🇬🇧<span data-lang="lang_en">English</span></a>
+                    <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm" style="color: var(--text-color);" data-lang-code="ku">☀️<span data-lang="lang_ku">Kurdî</span></a>
+                </div>
+            </div>
+            <img id="logo" src="assets/images/logo.png" alt="AA Game Logo" class="w-28 h-28 mx-auto mb-4" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+            <div id="logo-fallback" style="display:none;" class="w-28 h-28 mx-auto mb-4 flex items-center justify-center rounded-full" style="background-color: var(--button-bg-start);"><span class="text-5xl font-extrabold" style="color: var(--button-text-color);">AA</span></div>
+            <p class="mb-8 font-semibold text-lg" style="color: var(--text-color);"><span data-lang="high_score">High Score</span>: <span id="menuHighScoreValue">0</span></p>
+            <div class="flex flex-col gap-4">
+                <button id="startButton" class="w-full text-lg font-bold py-3.5 rounded-xl btn-primary" data-lang="start_button">BAŞLA</button>
+                <div class="grid grid-cols-2 gap-3">
+                     <button id="tutorialButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="how_to_play_button">Nasıl Oynanır</button>
+                     <button id="menuSettingsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="settings_button">Ayarlar</button>
+                </div>
+                <button id="sponsorsButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="sponsors_button">Sponsorlar</button>
+            </div>
+            <div class="mt-8 text-xs" style="color: var(--hint-color);"><span>Version 1.2.0</span></div>
+        </div>
+    </div>
+
+    <div class="screen z-50" id="pauseScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-8" style="color: var(--text-color);" data-lang="paused_title">Duraklatıldı</h1><div class="flex flex-col gap-3"><button id="resumeButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="resume_button">DEVAM ET</button><button id="pauseRestartButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="restart_button">YENİDEN BAŞLA</button><button id="pauseMenuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
+    <div class="screen z-50" id="gameOverScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-4" style="color: var(--text-color);" data-lang="game_over_title">Oyun Bitti</h1><div class="space-y-2 mb-6 text-lg" style="color: var(--text-color);"><p><span data-lang="score">Score</span>: <strong id="finalScoreText" class="font-bold">0</strong></p><p><span data-lang="high_score">High Score</span>: <strong id="highScoreText" class="font-bold">0</strong></p></div><p id="gameOverFeedback" class="text-sm mb-8 h-8" style="color: var(--hint-color);"></p><div class="flex flex-col gap-3"><button id="restartButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="try_again_button">TEKRAR DENE</button><button id="menuButton" class="w-full font-semibold py-3 rounded-xl btn-secondary" data-lang="menu_button">MENÜ</button></div></div></div>
+    <div class="screen z-50" id="levelUpScreen" style="background-color: var(--pause-bg-color);"><div class="w-full max-w-sm text-center p-8 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-5xl font-extrabold mb-2" style="color: var(--text-color);" data-lang="level_up_title">SEVİYE ATLANDI!</h1><p id="levelUpText" class="text-2xl font-medium mb-2" style="color: var(--hint-color);">Seviye 2</p><p id="levelUpHighScoreText" class="text-lg font-medium mb-8" style="color: var(--hint-color);">Yüksek Skor: 0</p><button id="continueButton" class="w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="continue_button">DEVAM ET</button></div></div>
+
+    <div class="screen z-50" id="settingsScreen" style="backdrop-filter: none;">
+        <div class="w-full max-w-lg p-4 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);">
+            <h1 class="text-3xl font-extrabold mb-6 text-center" style="color: var(--text-color);" data-lang="settings_title">Ayarlar</h1>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1 space-y-4">
+                    <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="visuals_label">Görsel Ayarlar</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="themeSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="theme_label">Tema</label><select id="themeSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="pinColorSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_color_label">Pin Rengi</label><select id="pinColorSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="circleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="circle_style_label">Çember Stili</label><select id="circleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="backgroundStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="background_style_label">Arkaplan</label><select id="backgroundStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div></div></div>
+                    <div class="p-4 rounded-lg" style="background-color: var(--bg-color);"><h2 class="text-lg font-bold mb-3" style="color: var(--text-color);" data-lang="gameplay_label">Oynanış</h2><div class="space-y-3"><div class="flex justify-between items-center"><label for="pinPlacementSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="pin_placement_label">Pin Yerleşimi</label><select id="pinPlacementSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><label for="particleStyleSelector" class="font-medium text-xs" style="color: var(--text-color);" data-lang="particle_effect_label">Parçacık Efekti</label><select id="particleStyleSelector" class="rounded-lg p-2 border-2 text-xs" style="background-color: var(--secondary-bg-color); border-color: var(--border-color); color: var(--text-color);"></select></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="sfx_label">Ses Efektleri</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="soundToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div><div class="flex justify-between items-center"><span class="font-medium text-xs" style="color: var(--text-color);" data-lang="vibration_label">Titreşim</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="vibrationToggle" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div></label></div></div></div>
+                </div>
+                <div class="w-full md:w-48 flex-shrink-0">
+                    <div class="p-4 rounded-lg h-full flex flex-col" style="background-color: var(--bg-color);">
+                        <h2 class="text-lg font-bold mb-3 text-center" style="color: var(--text-color);" data-lang="preview_label">Önizleme</h2>
+                        <div class="flex-grow flex items-center justify-center min-h-[150px]"><canvas id="settingsPreviewCanvas" class="w-full h-auto aspect-square"></canvas></div>
+                    </div>
+                </div>
+            </div>
+            <button id="closeSettingsButton" class="mt-6 w-full font-bold py-3 rounded-xl btn-secondary" data-lang="close_button">KAPAT</button>
+        </div>
+    </div>
+
+    <div class="screen z-50" id="tutorialScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh]" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="how_to_play_title">Nasıl Oynanır</h1><div class="space-y-6"><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_basics_title">Temel Kurallar</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🎯</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_1">Dönen çembere pinleri fırlatmak için ekrana dokun.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💥</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_2">Diğer pinlere veya engellere çarpma.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">📈</span><p style="color: var(--hint-color);" data-lang="tutorial_basics_3">Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.</p></div></div></div><div><h2 class="text-xl font-bold mb-3" style="color: var(--text-color);" data-lang="tutorial_powerups_title">Güçlendirmeler</h2><div class="space-y-3 text-left"><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">💣</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_1"><b>Bomba:</b> Çarptığı yerdeki pinleri temizler.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">🛡️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_2"><b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">⏱️</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_3"><b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.</p></div><div class="flex items-start gap-3"><span class="text-2xl mt-[-2px]">✨</span><p style="color: var(--hint-color);" data-lang="tutorial_powerups_4"><b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.</p></div></div></div></div><button id="backToMenuButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-primary" data-lang="got_it_button">ANLADIM</button></div></div>
+    <div class="screen z-50" id="sponsorsScreen" style="backdrop-filter: none;"><div class="w-full max-w-sm p-6 rounded-2xl shadow-2xl" style="background-color: var(--secondary-bg-color);"><h1 class="text-3xl font-extrabold mb-4 text-center" style="color: var(--text-color);" data-lang="sponsors_title">Sponsorlar</h1><a href="https://t.me/LiraKurdi" target="_blank" class="block p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"><div class="flex items-center"><span class="text-2xl mr-4">❤️</span><span class="font-semibold" style="color: var(--text-color);">@LiraKurdi</span></div></a><p class="mt-4 text-sm" style="color: var(--hint-color);"><a href="https://t.me/LiraKurdi" target="_blank" class="underline" data-lang="sponsor_contact">Sponsor olmak için iletişime geçiniz.</a></p><button id="closeSponsorsButton" class="mt-6 w-full text-lg font-bold py-3 rounded-xl btn-secondary" data-lang="close_button">KAPAT</button></div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const translations = {
+            en: {
+                start_button: "START", how_to_play_button: "How to Play", settings_button: "Settings", sponsors_button: "Sponsors", score: "Score", high_score: "High Score", paused_title: "Paused", resume_button: "RESUME", restart_button: "RESTART", menu_button: "MENU", game_over_title: "Game Over", try_again_button: "TRY AGAIN", level_up_title: "LEVEL UP!", continue_button: "CONTINUE", settings_title: "Settings", language_label: "Language", visuals_label: "Visuals", gameplay_label: "Gameplay", theme_label: "Theme", pin_color_label: "Pin Color", circle_style_label: "Circle Style", background_style_label: "Background", pin_placement_label: "Pin Placement", particle_effect_label: "Particle Effect", sfx_label: "Sound Effects", vibration_label: "Vibration", close_button: "CLOSE", how_to_play_title: "How to Play", tutorial_basics_title: "Basics", tutorial_basics_1: "Tap the screen to shoot pins at the rotating circle.", tutorial_basics_2: "Don't hit other pins or obstacles.", tutorial_basics_3: "Successfully place all pins to clear the level.", tutorial_powerups_title: "Power-ups", tutorial_powerups_1: "<b>Bomb:</b> Clears nearby pins on impact.", tutorial_powerups_2: "<b>Shield:</b> Protects you from your next collision.", tutorial_powerups_3: "<b>Slow-Mo:</b> Temporarily slows down the circle's rotation.", tutorial_powerups_4: "<b>Multiplier:</b> Increases points earned for a short time.", got_it_button: "GOT IT", sponsors_title: "Sponsors", sponsor_contact: "To become a sponsor, please contact us.", preview_label: "Preview", lang_tr: "Turkish", lang_en: "English", lang_ku: "Kurdish",
+                feedback_practice: "Keep practicing, you'll get the hang of it!", feedback_accuracy: "Incredible accuracy! You're a natural.", feedback_combo: "Amazing combo streak! You've got great rhythm.", feedback_anticipate: "Try to anticipate the circle's movement more.", feedback_effort: "Great effort! You're getting better with each game.",
+                theme_light: "Light", theme_dark: "Dark", theme_synthwave: "Synthwave", theme_forest: "Forest", theme_ocean: "Ocean", theme_fire_ice: "Fire & Ice",
+                pin_default: "Default", pin_blue: "Blue", pin_red: "Red", pin_green: "Green", pin_yellow: "Yellow", pin_pink: "Pink",
+                circle_default: "Default", circle_neon: "Neon Ring", circle_techno: "Techno Pattern",
+                background_plain: "Plain", background_starry: "Starry", background_geometric: "Geometric",
+                pin_placement_inside: "Inside", pin_placement_edge: "On Edge",
+                particle_spark: "Sparks", particle_bubble: "Bubbles"
+            },
+            tr: {
+                start_button: "BAŞLA", how_to_play_button: "Nasıl Oynanır", settings_button: "Ayarlar", sponsors_button: "Sponsorlar", score: "Skor", high_score: "Yüksek Skor", paused_title: "Duraklatıldı", resume_button: "DEVAM ET", restart_button: "YENİDEN BAŞLA", menu_button: "MENÜ", game_over_title: "Oyun Bitti", try_again_button: "TEKRAR DENE", level_up_title: "SEVİYE ATLANDI!", continue_button: "DEVAM ET", settings_title: "Ayarlar", language_label: "Dil", visuals_label: "Görsel Ayarlar", gameplay_label: "Oynanış", theme_label: "Tema", pin_color_label: "Pin Rengi", circle_style_label: "Çember Stili", background_style_label: "Arkaplan", pin_placement_label: "Pin Yerleşimi", particle_effect_label: "Parçacık Efekti", sfx_label: "Ses Efektleri", vibration_label: "Titreşim", close_button: "KAPAT", how_to_play_title: "Nasıl Oynanır", tutorial_basics_title: "Temel Kurallar", tutorial_basics_1: "Dönen çembere pinleri fırlatmak için ekrana dokun.", tutorial_basics_2: "Diğer pinlere veya engellere çarpma.", tutorial_basics_3: "Seviyeyi geçmek için tüm pinleri başarıyla yerleştir.", tutorial_powerups_title: "Güçlendirmeler", tutorial_powerups_1: "<b>Bomba:</b> Çarptığı yerdeki pinleri temizler.", tutorial_powerups_2: "<b>Kalkan:</b> Seni bir sonraki çarpışmadan korur.", tutorial_powerups_3: "<b>Yavaşlatma:</b> Çemberin dönüşünü geçici olarak yavaşlatır.", tutorial_powerups_4: "<b>Çarpan:</b> Kısa süreliğine kazanılan puanları artırır.", got_it_button: "ANLADIM", sponsors_title: "Sponsorlar", sponsor_contact: "Sponsor olmak için iletişime geçiniz.", preview_label: "Önizleme", lang_tr: "Türkçe", lang_en: "English", lang_ku: "Kurdî",
+                feedback_practice: "Pratik yapmaya devam et, alışacaksın!", feedback_accuracy: "İnanılmaz isabet! Doğuştan yeteneklisin.", feedback_combo: "Harika kombo serisi! Ritmin çok iyi.", feedback_anticipate: "Çemberin hareketini tahmin etmeye çalış.", feedback_effort: "Harika çaba! Her oyunda daha iyi oluyorsun.",
+                theme_light: "Açık", theme_dark: "Koyu", theme_synthwave: "Synthwave", theme_forest: "Orman", theme_ocean: "Okyanus", theme_fire_ice: "Ateş & Buz",
+                pin_default: "Varsayılan", pin_blue: "Mavi", pin_red: "Kırmızı", pin_green: "Yeşil", pin_yellow: "Sarı", pin_pink: "Pembe",
+                circle_default: "Varsayılan", circle_neon: "Neon Halka", circle_techno: "Tekno Desen",
+                background_plain: "Sade", background_starry: "Yıldızlı", background_geometric: "Geometrik",
+                pin_placement_inside: "İçeride", pin_placement_edge: "Kenarda",
+                particle_spark: "Kıvılcım", particle_bubble: "Baloncuk"
+            },
+            ku: {
+                start_button: "DESTPÊ BIKE", how_to_play_button: "Çawa Tê Lîstin", settings_button: "Mîhengan", sponsors_button: "Sponsoran", score: "Pûan", high_score: "Pûana Bilind", paused_title: "Hatek Rawestandin", resume_button: "DEWAM BIKE", restart_button: "JI NÛ VE DESTPÊ BIKE", menu_button: "MENÛ", game_over_title: "Lîstik Bi Dawî Bû", try_again_button: "DÎSA BICERIBÎNE", level_up_title: "AST DERBAS BÛ!", continue_button: "DEWAM BIKE", settings_title: "Mîhengan", language_label: "Ziman", visuals_label: "Mîhengên Dîtbarî", gameplay_label: "Lîstikvanî", theme_label: "Tema", pin_color_label: "Rengê Pînê", circle_style_label: "Stîla Çemberê", background_style_label: "Paşxan", pin_placement_label: "Cihê Pînê", particle_effect_label: "Efekta Parçeyan", sfx_label: "Efektên Dengî", vibration_label: "Vibrasyon", close_button: "BIGIRE", how_to_play_title: "Çawa Tê Lîstin", tutorial_basics_title: "Rêgezên Bingehîn", tutorial_basics_1: "Ji bo avêtina pîneyan li çembera zivirî, li ekranê bixe.", tutorial_basics_2: "Li pînên din an astengan nexe.", tutorial_basics_3: "Ji bo derbaskirina astê, hemî pîneyan bi serfirazî bi cih bike.", tutorial_powerups_title: "Hêzdarî", tutorial_powerups_1: "<b>Bumbe:</b> Pînên nêzîk li cihê lêdanê paqij dike.", tutorial_powerups_2: "<b>Mertal:</b> Te ji lêdana paşîn diparêze.", tutorial_powerups_3: "<b>Hêdîkirin:</b> Zivirandina çemberê demkî hêdî dike.", tutorial_powerups_4: "<b>Zêdeker:</b> Pûanên ku ji bo demek kurt têne qezenc kirin zêde dike.", got_it_button: "FÊM KIR", sponsors_title: "Sponsoran", sponsor_contact: "Ji bo sponsoriyê, ji kerema xwe re têkilî daynin.", preview_label: "Pêşdîtin", lang_tr: "Tirkî", lang_en: "Îngilîzî", lang_ku: "Kurdî",
+                feedback_practice: "Werzîşê bidomîne, tu yê jê fêr bibî!", feedback_accuracy: "Lêdaneke bêbawer! Tu jêhatî yî.", feedback_combo: "Rêzeya komboyê ya ecêb! Rîtma te pir baş e.", feedback_anticipate: "Hewl bide ku tevgera çemberê texmîn bikî.", feedback_effort: "Hewldaneke mezin! Tu di her lîstikê de çêtir dibî.",
+                theme_light: "Ronahî", theme_dark: "Tarî", theme_synthwave: "Synthwave", theme_forest: "Daristan", theme_ocean: "Okyanûs", theme_fire_ice: "Agir & Cemed",
+                pin_default: "Standart", pin_blue: "Şîn", pin_red: "Sor", pin_green: "Kesk", pin_yellow: "Zer", pin_pink: "Pembe",
+                circle_default: "Standart", circle_neon: "Xeleka Neon", circle_techno: "Nimûneya Tekno",
+                background_plain: "Sade", background_starry: "Bi Stêrk", background_geometric: "Geometrîk",
+                pin_placement_inside: "Hundur", pin_placement_edge: "Qerax",
+                particle_spark: "Çirûsk", particle_bubble: "Bubik"
+            }
+        };
+
+        const themes = { light: 'theme_light', dark: 'theme_dark', synthwave: 'theme_synthwave', forest: 'theme_forest', ocean: 'theme_ocean', 'fire-ice': 'theme_fire_ice' };
+        const pinColors = { default: 'pin_default', blue: 'pin_blue', red: 'pin_red', green: 'pin_green', yellow: 'pin_yellow', pink: 'pin_pink' };
+        const circleStyles = { default: 'circle_default', neon: 'circle_neon', techno: 'circle_techno' };
+        const backgroundStyles = { plain: 'background_plain', starry: 'background_starry', geometric: 'background_geometric' };
+        const pinPlacements = { inside: 'pin_placement_inside', edge: 'pin_placement_edge' };
+        const particleStyles = { spark: 'particle_spark', bubble: 'particle_bubble' };
+
+        let gameSettings = { language: 'tr', theme: 'light', sound: true, vibration: true, pinColor: 'default', circleStyle: 'default', backgroundStyle: 'plain', pinPlacement: 'inside', particleStyle: 'spark' };
+
+        const populateSelector = (selectorId, data) => {
+            const selector = document.getElementById(selectorId);
+            selector.innerHTML = '';
+            const currentLang = gameSettings.language;
+            for (const key in data) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = translations[currentLang][data[key]] || key;
+                selector.appendChild(option);
+            }
+        };
+
+        const setLanguage = (lang) => {
+            if (!translations[lang]) return;
+            gameSettings.language = lang;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.dataset.lang;
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+            populateSelector('themeSelector', themes);
+            document.getElementById('themeSelector').value = gameSettings.theme;
+            populateSelector('pinColorSelector', pinColors);
+            document.getElementById('pinColorSelector').value = gameSettings.pinColor;
+            populateSelector('circleStyleSelector', circleStyles);
+            document.getElementById('circleStyleSelector').value = gameSettings.circleStyle;
+            populateSelector('backgroundStyleSelector', backgroundStyles);
+            document.getElementById('backgroundStyleSelector').value = gameSettings.backgroundStyle;
+            populateSelector('pinPlacementSelector', pinPlacements);
+            document.getElementById('pinPlacementSelector').value = gameSettings.pinPlacement;
+            populateSelector('particleStyleSelector', particleStyles);
+            document.getElementById('particleStyleSelector').value = gameSettings.particleStyle;
+            saveSettings();
+        };
+        
+        const applyTheme = (themeKey) => {
+            const themeClasses = { light: '', dark: 'dark', synthwave: 'synthwave', forest: 'forest', ocean: 'ocean', 'fire-ice': 'fire-ice' };
+            if (!themeClasses.hasOwnProperty(themeKey)) return;
+            gameSettings.theme = themeKey;
+            document.documentElement.className = themeClasses[themeKey];
+            saveSettings();
+        };
+
+        const saveSettings = () => localStorage.setItem('aaGameSettings', JSON.stringify(gameSettings));
+        const loadSettings = () => {
+            const saved = localStorage.getItem('aaGameSettings');
+            if (saved) gameSettings = { ...gameSettings, ...JSON.parse(saved) };
+            setLanguage(gameSettings.language);
+            applyTheme(gameSettings.theme);
+            document.getElementById('soundToggle').checked = gameSettings.sound;
+            document.getElementById('vibrationToggle').checked = gameSettings.vibration;
+        };
+        
+        function shadeColor(color, percent) {
+            let R = parseInt(color.substring(1,3),16);
+            let G = parseInt(color.substring(3,5),16);
+            let B = parseInt(color.substring(5,7),16);
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+            R = (R<255)?R:255;  
+            G = (G<255)?G:255;  
+            B = (B<255)?B:255;  
+            let RR = (R.toString(16).length==1) ? "0"+R.toString(16):R.toString(16);
+            let GG = (G.toString(16).length==1) ? "0"+G.toString(16):G.toString(16);
+            let BB = (B.toString(16).length==1) ? "0"+B.toString(16):B.toString(16);
+            return "#"+RR+GG+BB;
+        }
+        
+        class SoundManager { constructor(){this.isUnlocked=!1,this.synths={}}async unlockAudio(){if(this.isUnlocked||"undefined"==typeof Tone)return;try{await Tone.start(),this.synths={shoot:new Tone.PluckSynth({attackNoise:.5,dampening:4e3,resonance:.7}).toDestination(),hit:new Tone.MembraneSynth({pitchDecay:.01,octaves:2,envelope:{attack:.001,decay:.2,sustain:.01,release:.2}}).toDestination(),gameOver:new Tone.FMSynth({harmonicity:3,modulationIndex:10}).toDestination(),powerUp:new Tone.Synth({oscillator:{type:"triangle"}}).toDestination(),levelUp:new Tone.PolySynth(Tone.Synth).toDestination(),bomb:new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.005,decay:.2,sustain:0}}).toDestination()},this.isUnlocked=!0}catch(t){console.error("Audio engine failed to start:",t)}}play(t){if(!this.isUnlocked||!gameSettings.sound)return;try{const e=Tone.now();this.synths[t]&&("levelUp"===t?this.synths.levelUp.triggerAttackRelease(["C4","E4","G4"],"8n",e):"gameOver"===t?this.synths.gameOver.triggerAttackRelease("C2","1n",e):"shoot"===t?this.synths.shoot.triggerAttackRelease("C5","8n",e):"hit"===t?this.synths.hit.triggerAttackRelease("C2","8n",e):"powerUp"===t?this.synths.powerUp.triggerAttackRelease("G5","16n",e):"bomb"===t&&this.synths.bomb.triggerAttackRelease("0.2n",e))}catch(e){console.error(`Failed to play sound: ${t}`,e)}}}
+        class AdaptiveLevelManager { constructor(){this.resetForNewGame()}updateStats(t,e,s){this.playerStats.totalPins++,this.playerStats.successfulPins++,this.playerStats.avgPinTime=(this.playerStats.avgPinTime*(this.playerStats.successfulPins-1)+t)/this.playerStats.successfulPins,e&&this.playerStats.closeCalls++,s&&this.playerStats.combos++}resetForNewGame(){this.playerStats={totalPins:0,successfulPins:0,avgPinTime:5,closeCalls:0,combos:0},this.levelHistory=[]}getAccuracy(){return this.playerStats.totalPins>0?this.playerStats.successfulPins/this.playerStats.totalPins:1}getLevelData(t){if(t<=3)return[{pins:6,speed:.004,pChance:.1,dChanges:0,obstacles:0},{pins:8,speed:.0045,pChance:.15,dChanges:0,obstacles:0},{pins:10,speed:.005,pChance:.2,dChanges:1,obstacles:0}][t-1];const e=this.getAccuracy(),s=this.levelHistory[this.levelHistory.length-1]||{pins:10,speed:.005,pChance:.2,dChanges:0,obstacles:0};let i=s.speed;e>.95&&this.playerStats.avgPinTime<3?i*=1.08:e<.8&&(i*=.92);let o=s.pins;e>.9?o+=Math.ceil(2*Math.random()):e<.85&&o>8&&o--;let a=s.dChanges;t>5&&e>.92&&(a+=Math.random()<.3?1:0);let n=s.obstacles;t>8&&e>.95&&(n+=Math.random()<.2?1:0);const r=t%10==0;r&&(i*=1.1,o+=3,n=Math.max(1,n),a=Math.max(2,a));const l={pins:Math.floor(Math.min(Math.max(8,o),40)),speed:Math.min(Math.max(.003,i),.02),pChance:Math.min(.2+.02*t,.8),dChanges:Math.floor(Math.min(a,5)),obstacles:Math.floor(Math.min(n,3)),isBoss:r};return this.levelHistory.push(l),l}}
+
+        const GAME_SKILLS = { SLOW: { type: 'slow', duration: 500, color: '#FBBC05', icon: '⏱️' }, SHIELD: { type: 'shield', duration: 1, color: '#4285F4', icon: '🛡️' }, MULTIPLIER: { type: 'multiplier', duration: 400, color: '#EA4335', icon: '✨' }, BOMB: { type: 'bomb', duration: 1, color: '#202124', icon: '💣' } };
+        const CONFIG = { PHYSICS: { PIN_LENGTH_RATIO: 0.15, PIN_HEAD_RADIUS_RATIO: 0.018, PIN_FLY_SPEED: 35, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48, PIN_OFFSET_FROM_EDGE: 5 }, GAME: { SCORE_PER_PIN: 10, BONUS_MULTIPLIER: 2.5, COMBO_TIME_LIMIT: 60, COMBO_BONUS_SCORE: 5 } };
+
+        class AAGame {
+            constructor() {
+                this.soundManager = new SoundManager();
+                this.levelManager = new AdaptiveLevelManager();
+                this.state = 'ready';
+                this.initDOM();
+                this.initGame();
+            }
+
+            initDOM() {
+                this.gameContainer = document.getElementById('gameContainer');
+                this.canvas = document.getElementById('gameCanvas'); this.ctx = this.canvas.getContext('2d');
+                this.ui = { score: document.getElementById('scoreValue'), level: document.getElementById('levelValue'), highScore: document.getElementById('highScoreValue'), progressBar: document.getElementById('progressBar'), finalScore: document.getElementById('finalScoreText'), highScoreText: document.getElementById('highScoreText'), levelUpText: document.getElementById('levelUpText'), powerUpIndicator: document.getElementById('powerUpIndicator'), menuHighScore: document.getElementById('menuHighScoreValue'), gameFeedback: document.getElementById('gameFeedback'), uiOverlay: document.getElementById('uiOverlay'), progressContainer: document.getElementById('progressContainer'), gameOverFeedback: document.getElementById('gameOverFeedback'), levelUpHighScoreText: document.getElementById('levelUpHighScoreText') };
+                this.screens = { start: document.getElementById('startScreen'), pause: document.getElementById('pauseScreen'), gameOver: document.getElementById('gameOverScreen'), levelUp: document.getElementById('levelUpScreen'), settings: document.getElementById('settingsScreen'), tutorial: document.getElementById('tutorialScreen'), sponsors: document.getElementById('sponsorsScreen') };
+                this.settingsUI = { language: document.getElementById('languageSelector'), theme: document.getElementById('themeSelector'), pinColor: document.getElementById('pinColorSelector'), circleStyle: document.getElementById('circleStyleSelector'), backgroundStyle: document.getElementById('backgroundStyleSelector'), pinPlacement: document.getElementById('pinPlacementSelector'), particleStyle: document.getElementById('particleStyleSelector'), sound: document.getElementById('soundToggle'), vibration: document.getElementById('vibrationToggle') };
+                this.previewCanvas = document.getElementById('settingsPreviewCanvas');
+                if (this.previewCanvas) this.previewCtx = this.previewCanvas.getContext('2d');
+            }
+
+            initGame() {
+                this.animationFrameId = null; this.lastTime = 0; this.score = 0; this.level = 1; this.highScore = 0;
+                this.pinsPlacedThisLevel = 0; this.activePowerUps = {}; this.particles = [];
+                this.comboCount = 0; this.comboTimer = 0; this.currentPin = null; this.pinsOnCircle = [];
+                this.powerUpsOnCircle = []; this.obstacles = [];
+                this.circle = { angle: 0, speed: 0, direction: 1, directionChangePins: [], isBoss: false, baseRadius: 0 };
+                this.pinShotTime = 0; this.screenShakeTime = 0; this.screenShakeMagnitude = 0;
+                this.listenersAttached = false;
+                this.starfield = [];
+                
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                this.setupEventListeners();
+                loadSettings();
+                this.highScore = parseInt(localStorage.getItem('aaGameHighScore') || '0');
+                this.ui.highScore.textContent = this.highScore;
+                this.ui.menuHighScore.textContent = this.highScore;
+                this.showScreen('start');
+            }
+
+            resizeCanvas() {
+                const isPortrait = window.innerWidth < window.innerHeight;
+                const size = Math.min(window.innerWidth * (isPortrait ? 0.95 : 0.7), window.innerHeight * (isPortrait ? 0.6 : 0.95));
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.style.width = `${size}px`; this.canvas.style.height = `${size}px`;
+                this.canvas.width = size * dpr; this.canvas.height = size * dpr;
+                this.ctx.scale(dpr, dpr);
+                const logicalSize = size;
+                this.center = { x: logicalSize / 2, y: logicalSize / 2 };
+                this.circleRadius = logicalSize * 0.35;
+                this.pinLength = logicalSize * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
+                this.pinHeadRadius = logicalSize * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
+                if (this.state !== 'playing' && this.state !== 'paused') this.draw();
+            }
+
+            setupEventListeners() {
+                if (this.listenersAttached) return;
+                const handleInteraction = (e) => {
+                    const btn = e.target.closest('button');
+                    if (btn) {
+                        switch(btn.id) {
+                            case 'startButton': case 'restartButton': case 'pauseRestartButton': this.startGame(); break;
+                            case 'menuButton': case 'pauseMenuButton': case 'backToMenuButton': case 'closeSponsorsButton': case 'closeSettingsButton': this.showScreen('start'); if(this.previewAnimation) cancelAnimationFrame(this.previewAnimation); break;
+                            case 'continueButton': this.continueToNextLevel(); break;
+                            case 'menuSettingsButton': this.showScreen('settings'); this.runSettingsPreview(); break;
+                            case 'tutorialButton': this.showScreen('tutorial'); break;
+                            case 'sponsorsButton': this.showScreen('sponsors'); break;
+                            case 'pauseButton': this.pauseGame(); break;
+                            case 'resumeButton': this.resumeGame(); break;
+                        }
+                    } else if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
+                        e.preventDefault(); this.shootPin();
+                    }
+                };
+                this.gameContainer.addEventListener('click', handleInteraction);
+                this.gameContainer.addEventListener('touchstart', (e) => { if (!e.target.closest('button')) handleInteraction(e); }, { passive: false });
+                document.addEventListener('keydown', (e) => { if (e.code === 'Space' && this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) { e.preventDefault(); this.shootPin(); } });
+                
+                const langButton = document.getElementById('language-button');
+                const langDropdown = document.getElementById('language-dropdown');
+                langButton.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); langDropdown.style.opacity = langDropdown.classList.contains('hidden') ? '0' : '1'; langDropdown.style.transform = langDropdown.classList.contains('hidden') ? 'scale(0.9)' : 'scale(1)'; });
+                document.addEventListener('click', () => { langDropdown.classList.add('hidden'); langDropdown.style.opacity = '0'; langDropdown.style.transform = 'scale(0.9)'; });
+                langDropdown.addEventListener('click', (e) => { e.stopPropagation(); if (e.target.closest('a')) { setLanguage(e.target.closest('a').dataset.langCode); langDropdown.classList.add('hidden'); langDropdown.style.opacity = '0'; langDropdown.style.transform = 'scale(0.9)'; } });
+
+                const settingsChangeHandler = () => { saveSettings(); this.draw(); };
+                this.settingsUI.theme.addEventListener('change', (e) => { applyTheme(e.target.value); this.draw(); });
+                this.settingsUI.pinColor.addEventListener('change', (e) => { gameSettings.pinColor = e.target.value; settingsChangeHandler(); });
+                this.settingsUI.circleStyle.addEventListener('change', (e) => { gameSettings.circleStyle = e.target.value; settingsChangeHandler(); });
+                this.settingsUI.backgroundStyle.addEventListener('change', (e) => { this.starfield = []; gameSettings.backgroundStyle = e.target.value; settingsChangeHandler(); });
+                this.settingsUI.pinPlacement.addEventListener('change', (e) => { gameSettings.pinPlacement = e.target.value; settingsChangeHandler(); });
+                this.settingsUI.particleStyle.addEventListener('change', (e) => { gameSettings.particleStyle = e.target.value; settingsChangeHandler(); });
+                this.settingsUI.sound.addEventListener('change', (e) => { gameSettings.sound = e.target.checked; saveSettings(); });
+                this.settingsUI.vibration.addEventListener('change', (e) => { gameSettings.vibration = e.target.checked; saveSettings(); });
+                
+                this.listenersAttached = true;
+            }
+
+            vibrate(d) { if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(d); }
+            triggerScreenShake(m, d) { this.screenShakeMagnitude = m; this.screenShakeTime = d; }
+            pauseGame() { if (this.state !== 'playing') return; this.state = 'paused'; this.showScreen('pause'); }
+            resumeGame() { if (this.state !== 'paused') return; this.state = 'playing'; this.showScreen(null); this.lastTime = performance.now(); requestAnimationFrame(this.gameLoop.bind(this)); }
+
+            async startGame() {
+                await this.soundManager.unlockAudio();
+                this.state = 'playing'; this.score = 0; this.level = 1;
+                this.levelManager.resetForNewGame(); this.setupLevel(); this.updateUI(); this.showScreen(null);
+                this.lastTime = performance.now();
+                if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+                this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
+            }
+
+            setupLevel() {
+                const d = this.levelManager.getLevelData(this.level);
+                this.pinsToShoot = d.pins; this.maxPinsForLevel = d.pins;
+                this.pinsPlacedThisLevel = 0; this.pinsOnCircle = []; this.powerUpsOnCircle = []; this.obstacles = [];
+                this.activePowerUps = {}; this.comboCount = 0; this.comboTimer = 0;
+                this.circle = { angle: Math.random() * Math.PI * 2, speed: d.speed, direction: Math.random() > 0.5 ? 1 : -1, directionChangePins: [], isBoss: !!d.isBoss, baseRadius: this.circleRadius };
+                if (d.dChanges > 0) { let p = Array.from({length: this.pinsToShoot - 2}, (_, i) => i + 2); for (let i = 0; i < d.dChanges; i++) { if (p.length === 0) break; const c = Math.floor(Math.random() * p.length); this.circle.directionChangePins.push(this.pinsToShoot - p.splice(c, 1)[0] + 1); } }
+                for (let i = 0; i < d.obstacles; i++) {
+                    this.obstacles.push({
+                        angle: (i * 2 * Math.PI) / d.obstacles,
+                        speed: (Math.random() * 0.005 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
+                        distance: CONFIG.PHYSICS.OBSTACLE_DISTANCE_RATIO,
+                        distanceDirection: Math.random() > 0.5 ? 1 : -1
+                    });
                 }
-            };
+                if (Math.random() < d.pChance) this.spawnPowerUp();
+                this.spawnPin();
+            }
+            
+            spawnPowerUp() {
+                const p = Object.values(GAME_SKILLS)[Math.floor(Math.random() * Object.values(GAME_SKILLS).length)];
+                let a, s = false, t = 0;
+                while (!s && t < 10) { a = Math.random() * Math.PI * 2; s = this.pinsOnCircle.every(pin => { let d = Math.abs(pin.angle - a); return Math.min(d, 2 * Math.PI - d) >= CONFIG.PHYSICS.COLLISION_THRESHOLD * 2; }); t++; }
+                if (s) this.powerUpsOnCircle.push({ angle: a, type: p.type, icon: p.icon });
+            }
 
-            const themes = { light: 'theme_light', dark: 'theme_dark', synthwave: 'theme_synthwave', forest: 'theme_forest', ocean: 'theme_ocean', 'fire-ice': 'theme_fire_ice' };
-            const pinColors = { default: 'pin_default', blue: 'pin_blue', red: 'pin_red', green: 'pin_green', yellow: 'pin_yellow', pink: 'pin_pink' };
-            const circleStyles = { default: 'circle_default', neon: 'circle_neon', techno: 'circle_techno' };
-            const backgroundStyles = { plain: 'background_plain', starry: 'background_starry', geometric: 'background_geometric' };
-            const pinPlacements = { inside: 'pin_placement_inside', edge: 'pin_placement_edge' };
-            const particleStyles = { spark: 'particle_spark', bubble: 'particle_bubble' };
+            spawnPin() {
+                const startY = this.canvas.height / (window.devicePixelRatio || 1);
+                this.currentPin = { y: startY, isFlying: false };
+            }
+            shootPin() {
+                if (this.state !== 'playing' || !this.currentPin || this.currentPin.isFlying) return;
+                this.currentPin.isFlying = true; this.soundManager.play('shoot'); this.vibrate(50);
+                this.pinShotTime = performance.now();
+            }
 
-            let gameSettings = { language: 'tr', theme: 'light', sound: true, vibration: true, pinColor: 'default', circleStyle: 'default', backgroundStyle: 'plain', pinPlacement: 'inside', particleStyle: 'spark' };
+            gameLoop(time) {
+                if (this.state === 'ended') return;
+                this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
+                if (this.state !== 'playing') return;
+                const dt = Math.min(32, time - this.lastTime) / (1000 / 60);
+                this.lastTime = time;
+                this.update(dt); this.draw();
+            }
 
-            const populateSelector = (selectorId, data) => {
-                const selector = document.getElementById(selectorId);
-                selector.innerHTML = '';
-                const currentLang = gameSettings.language;
-                for (const key in data) {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = translations[currentLang][data[key]] || key;
-                    selector.appendChild(option);
-                }
-            };
-
-            const setLanguage = (lang) => {
-                if (!translations[lang]) return;
-                gameSettings.language = lang;
-                document.documentElement.lang = lang;
-                document.querySelectorAll('[data-lang]').forEach(el => {
-                    const key = el.dataset.lang;
-                    if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            update(dt) {
+                let speedMultiplier = this.activePowerUps.slow ? 0.5 : 1;
+                this.circle.angle = (this.circle.angle + this.circle.speed * this.circle.direction * speedMultiplier * dt) % (2 * Math.PI);
+                
+                this.obstacles.forEach(o => {
+                    o.angle = (o.angle + o.speed * speedMultiplier * dt) % (2 * Math.PI);
+                    if (this.level >= 10) {
+                        o.distance += 0.001 * o.distanceDirection * dt;
+                        if (o.distance > 0.6 || o.distance < 0.4) {
+                            o.distanceDirection *= -1;
+                            o.distance = Math.max(0.4, Math.min(0.6, o.distance));
+                        }
+                    }
                 });
-                populateSelector('themeSelector', themes);
-                document.getElementById('themeSelector').value = gameSettings.theme;
-                populateSelector('pinColorSelector', pinColors);
-                document.getElementById('pinColorSelector').value = gameSettings.pinColor;
-                populateSelector('circleStyleSelector', circleStyles);
-                document.getElementById('circleStyleSelector').value = gameSettings.circleStyle;
-                populateSelector('backgroundStyleSelector', backgroundStyles);
-                document.getElementById('backgroundStyleSelector').value = gameSettings.backgroundStyle;
-                populateSelector('pinPlacementSelector', pinPlacements);
-                document.getElementById('pinPlacementSelector').value = gameSettings.pinPlacement;
-                populateSelector('particleStyleSelector', particleStyles);
-                document.getElementById('particleStyleSelector').value = gameSettings.particleStyle;
-                saveSettings();
-            };
+                
+                if (this.currentPin?.isFlying) {
+                    this.currentPin.y -= CONFIG.PHYSICS.PIN_FLY_SPEED * dt;
+                    this.checkCollision();
+                }
+
+                Object.keys(this.activePowerUps).forEach(k => { if (k !== 'shield' && k !== 'bomb') { this.activePowerUps[k] -= dt; if (this.activePowerUps[k] <= 0) { delete this.activePowerUps[k]; this.updatePowerUpDisplay(); } } });
+                this.comboTimer = Math.max(0, this.comboTimer - dt); if(this.comboTimer === 0) this.comboCount = 0;
+                this.updateParticles(dt);
+                if (this.screenShakeTime > 0) {
+                    this.screenShakeTime -= dt;
+                    const sx = (Math.random() - 0.5) * this.screenShakeMagnitude;
+                    const sy = (Math.random() - 0.5) * this.screenShakeMagnitude;
+                    this.canvas.style.transform = `translate(${sx}px, ${sy}px)`;
+                } else this.canvas.style.transform = 'translate(0, 0)';
+            }
             
-            const applyTheme = (themeKey) => {
-                const themeClasses = { light: '', dark: 'dark', synthwave: 'synthwave', forest: 'forest', ocean: 'ocean', 'fire-ice': 'fire-ice' };
-                if (!themeClasses.hasOwnProperty(themeKey)) return;
-                gameSettings.theme = themeKey;
-                document.documentElement.className = themeClasses[themeKey];
-                saveSettings();
-            };
+            checkCollision() {
+                if (!this.currentPin?.isFlying) return;
 
-            const saveSettings = () => localStorage.setItem('aaGameSettings', JSON.stringify(gameSettings));
-            const loadSettings = () => {
-                const saved = localStorage.getItem('aaGameSettings');
-                if (saved) gameSettings = { ...gameSettings, ...JSON.parse(saved) };
-                setLanguage(gameSettings.language);
-                applyTheme(gameSettings.theme);
-                document.getElementById('soundToggle').checked = gameSettings.sound;
-                document.getElementById('vibrationToggle').checked = gameSettings.vibration;
-            };
-            
-            class SoundManager { /* ... (no changes) ... */ constructor(){this.isUnlocked=!1,this.synths={}}async unlockAudio(){if(this.isUnlocked||"undefined"==typeof Tone)return;try{await Tone.start(),this.synths={shoot:new Tone.PluckSynth({attackNoise:.5,dampening:4e3,resonance:.7}).toDestination(),hit:new Tone.MembraneSynth({pitchDecay:.01,octaves:2,envelope:{attack:.001,decay:.2,sustain:.01,release:.2}}).toDestination(),gameOver:new Tone.FMSynth({harmonicity:3,modulationIndex:10}).toDestination(),powerUp:new Tone.Synth({oscillator:{type:"triangle"}}).toDestination(),levelUp:new Tone.PolySynth(Tone.Synth).toDestination(),bomb:new Tone.NoiseSynth({noise:{type:"white"},envelope:{attack:.005,decay:.2,sustain:0}}).toDestination()},this.isUnlocked=!0}catch(t){console.error("Audio engine failed to start:",t)}}play(t){if(!this.isUnlocked||!gameSettings.sound)return;try{const e=Tone.now();this.synths[t]&&("levelUp"===t?this.synths.levelUp.triggerAttackRelease(["C4","E4","G4"],"8n",e):"gameOver"===t?this.synths.gameOver.triggerAttackRelease("C2","1n",e):"shoot"===t?this.synths.shoot.triggerAttackRelease("C5","8n",e):"hit"===t?this.synths.hit.triggerAttackRelease("C2","8n",e):"powerUp"===t?this.synths.powerUp.triggerAttackRelease("G5","16n",e):"bomb"===t&&this.synths.bomb.triggerAttackRelease("0.2n",e))}catch(e){console.error(`Failed to play sound: ${t}`,e)}}}
-            class AdaptiveLevelManager { /* ... (no changes) ... */ constructor(){this.resetForNewGame()}updateStats(t,e,s){this.playerStats.totalPins++,this.playerStats.successfulPins++,this.playerStats.avgPinTime=(this.playerStats.avgPinTime*(this.playerStats.successfulPins-1)+t)/this.playerStats.successfulPins,e&&this.playerStats.closeCalls++,s&&this.playerStats.combos++}resetForNewGame(){this.playerStats={totalPins:0,successfulPins:0,avgPinTime:5,closeCalls:0,combos:0},this.levelHistory=[]}getAccuracy(){return this.playerStats.totalPins>0?this.playerStats.successfulPins/this.playerStats.totalPins:1}getLevelData(t){if(t<=3)return[{pins:6,speed:.004,pChance:.1,dChanges:0,obstacles:0},{pins:8,speed:.0045,pChance:.15,dChanges:0,obstacles:0},{pins:10,speed:.005,pChance:.2,dChanges:1,obstacles:0}][t-1];const e=this.getAccuracy(),s=this.levelHistory[this.levelHistory.length-1]||{pins:10,speed:.005,pChance:.2,dChanges:0,obstacles:0};let i=s.speed;e>.95&&this.playerStats.avgPinTime<3?i*=1.08:e<.8&&(i*=.92);let o=s.pins;e>.9?o+=Math.ceil(2*Math.random()):e<.85&&o>8&&o--;let a=s.dChanges;t>5&&e>.92&&(a+=Math.random()<.3?1:0);let n=s.obstacles;t>8&&e>.95&&(n+=Math.random()<.2?1:0);const r=t%10==0;r&&(i*=1.1,o+=3,n=Math.max(1,n),a=Math.max(2,a));const l={pins:Math.floor(Math.min(Math.max(8,o),40)),speed:Math.min(Math.max(.003,i),.02),pChance:Math.min(.2+.02*t,.8),dChanges:Math.floor(Math.min(a,5)),obstacles:Math.floor(Math.min(n,3)),isBoss:r};return this.levelHistory.push(l),l}}
+                const pinTipY = this.currentPin.y - this.pinLength - (gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0);
+                
+                if (pinTipY <= this.center.y + this.circleRadius) {
+                    this.currentPin.isFlying = false;
+                    const newPinAngle = (1.5 * Math.PI - this.circle.angle + 2 * Math.PI) % (2 * Math.PI);
+                    const threshold = CONFIG.PHYSICS.COLLISION_THRESHOLD;
+                    let isCloseCall = false;
 
-            const GAME_SKILLS = { SLOW: { type: 'slow', duration: 500, color: '#FBBC05', icon: '⏱️' }, SHIELD: { type: 'shield', duration: 1, color: '#4285F4', icon: '🛡️' }, MULTIPLIER: { type: 'multiplier', duration: 400, color: '#EA4335', icon: '✨' }, BOMB: { type: 'bomb', duration: 1, color: '#202124', icon: '💣' } };
-            const CONFIG = { PHYSICS: { PIN_LENGTH_RATIO: 0.15, PIN_HEAD_RADIUS_RATIO: 0.018, PIN_FLY_SPEED: 35, COLLISION_THRESHOLD: 0.1, OBSTACLE_SIZE_RATIO: 0.03, OBSTACLE_DISTANCE_RATIO: 0.48, PIN_OFFSET_FROM_EDGE: 5 }, GAME: { SCORE_PER_PIN: 10, BONUS_MULTIPLIER: 2.5, COMBO_TIME_LIMIT: 60, COMBO_BONUS_SCORE: 5 } };
-
-            class AAGame {
-                constructor() {
-                    this.soundManager = new SoundManager();
-                    this.levelManager = new AdaptiveLevelManager();
-                    this.state = 'ready';
-                    this.initDOM();
-                    this.initGame();
-                }
-
-                initDOM() {
-                    this.gameContainer = document.getElementById('gameContainer');
-                    this.canvas = document.getElementById('gameCanvas'); this.ctx = this.canvas.getContext('2d');
-                    this.ui = { score: document.getElementById('scoreValue'), level: document.getElementById('levelValue'), highScore: document.getElementById('highScoreValue'), progressBar: document.getElementById('progressBar'), finalScore: document.getElementById('finalScoreText'), highScoreText: document.getElementById('highScoreText'), levelUpText: document.getElementById('levelUpText'), powerUpIndicator: document.getElementById('powerUpIndicator'), menuHighScore: document.getElementById('menuHighScoreValue'), gameFeedback: document.getElementById('gameFeedback'), uiOverlay: document.getElementById('uiOverlay'), progressContainer: document.getElementById('progressContainer'), gameOverFeedback: document.getElementById('gameOverFeedback'), levelUpHighScoreText: document.getElementById('levelUpHighScoreText') };
-                    this.screens = { start: document.getElementById('startScreen'), pause: document.getElementById('pauseScreen'), gameOver: document.getElementById('gameOverScreen'), levelUp: document.getElementById('levelUpScreen'), settings: document.getElementById('settingsScreen'), tutorial: document.getElementById('tutorialScreen'), sponsors: document.getElementById('sponsorsScreen') };
-                    this.settingsUI = { language: document.getElementById('languageSelector'), theme: document.getElementById('themeSelector'), pinColor: document.getElementById('pinColorSelector'), circleStyle: document.getElementById('circleStyleSelector'), backgroundStyle: document.getElementById('backgroundStyleSelector'), pinPlacement: document.getElementById('pinPlacementSelector'), particleStyle: document.getElementById('particleStyleSelector'), sound: document.getElementById('soundToggle'), vibration: document.getElementById('vibrationToggle') };
-                    this.previewCanvas = document.getElementById('settingsPreviewCanvas');
-                    if (this.previewCanvas) this.previewCtx = this.previewCanvas.getContext('2d');
-                }
-
-                initGame() {
-                    this.animationFrameId = null; this.lastTime = 0; this.score = 0; this.level = 1; this.highScore = 0;
-                    this.pinsPlacedThisLevel = 0; this.activePowerUps = {}; this.particles = [];
-                    this.comboCount = 0; this.comboTimer = 0; this.currentPin = null; this.pinsOnCircle = [];
-                    this.powerUpsOnCircle = []; this.obstacles = [];
-                    this.circle = { angle: 0, speed: 0, direction: 1, directionChangePins: [], isBoss: false, baseRadius: 0 };
-                    this.pinShotTime = 0; this.screenShakeTime = 0; this.screenShakeMagnitude = 0;
-                    this.listenersAttached = false;
-                    this.starfield = [];
-                    
-                    this.resizeCanvas();
-                    window.addEventListener('resize', () => this.resizeCanvas());
-                    this.setupEventListeners();
-                    loadSettings();
-                    this.highScore = parseInt(localStorage.getItem('aaGameHighScore') || '0');
-                    this.ui.highScore.textContent = this.highScore;
-                    this.ui.menuHighScore.textContent = this.highScore;
-                    this.showScreen('start');
-                }
-
-                resizeCanvas() {
-                    const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.7);
-                    const dpr = window.devicePixelRatio || 1;
-                    this.canvas.style.width = `${size}px`; this.canvas.style.height = `${size}px`;
-                    this.canvas.width = size * dpr; this.canvas.height = size * dpr;
-                    this.ctx.scale(dpr, dpr);
-                    const logicalSize = size;
-                    this.center = { x: logicalSize / 2, y: logicalSize / 2 };
-                    this.circleRadius = logicalSize * 0.35;
-                    this.pinLength = logicalSize * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
-                    this.pinHeadRadius = logicalSize * CONFIG.PHYSICS.PIN_HEAD_RADIUS_RATIO;
-                    if (this.state !== 'playing' && this.state !== 'paused') this.draw();
-                }
-
-                setupEventListeners() {
-                    if (this.listenersAttached) return;
-                    const handleInteraction = (e) => {
-                        const btn = e.target.closest('button');
-                        if (btn) {
-                            switch(btn.id) {
-                                case 'startButton': case 'restartButton': case 'pauseRestartButton': this.startGame(); break;
-                                case 'menuButton': case 'pauseMenuButton': case 'backToMenuButton': case 'closeSponsorsButton': case 'closeSettingsButton': this.showScreen('start'); if(this.previewAnimation) cancelAnimationFrame(this.previewAnimation); break;
-                                case 'continueButton': this.continueToNextLevel(); break;
-                                case 'menuSettingsButton': this.showScreen('settings'); this.runSettingsPreview(); break;
-                                case 'tutorialButton': this.showScreen('tutorial'); break;
-                                case 'sponsorsButton': this.showScreen('sponsors'); break;
-                                case 'pauseButton': this.pauseGame(); break;
-                                case 'resumeButton': this.resumeGame(); break;
-                            }
-                        } else if (this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) {
-                            e.preventDefault(); this.shootPin();
+                    for (const o of this.obstacles) { let d = Math.abs(newPinAngle - o.angle); if (Math.min(d, 2 * Math.PI - d) < threshold) { this.gameOver(); return; } }
+                    for (const p of this.pinsOnCircle) {
+                        let d = Math.abs(newPinAngle - p.angle); d = Math.min(d, 2 * Math.PI - d);
+                        if (d < threshold) {
+                            if (this.activePowerUps.shield) {
+                                this.soundManager.play('hit'); this.createParticles(this.center.x, this.center.y + this.circleRadius, GAME_SKILLS.SHIELD.color, 30);
+                                delete this.activePowerUps.shield; this.updatePowerUpDisplay();
+                                this.pinsToShoot--; this.currentPin = null;
+                                if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
+                                this.updateUI(); return;
+                            } else { this.triggerScreenShake(8, 20); this.gameOver(); return; }
                         }
-                    };
-                    this.gameContainer.addEventListener('click', handleInteraction);
-                    this.gameContainer.addEventListener('touchstart', (e) => { if (!e.target.closest('button')) handleInteraction(e); }, { passive: false });
-                    document.addEventListener('keydown', (e) => { if (e.code === 'Space' && this.state === 'playing' && this.currentPin && !this.currentPin.isFlying) { e.preventDefault(); this.shootPin(); } });
-                    
-                    const langButton = document.getElementById('language-button');
-                    const langDropdown = document.getElementById('language-dropdown');
-                    langButton.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); langDropdown.style.opacity = langDropdown.classList.contains('hidden') ? '0' : '1'; langDropdown.style.transform = langDropdown.classList.contains('hidden') ? 'scale(0.9)' : 'scale(1)'; });
-                    document.addEventListener('click', () => { langDropdown.classList.add('hidden'); langDropdown.style.opacity = '0'; langDropdown.style.transform = 'scale(0.9)'; });
-                    langDropdown.addEventListener('click', (e) => { e.stopPropagation(); if (e.target.closest('a')) { setLanguage(e.target.closest('a').dataset.langCode); langDropdown.classList.add('hidden'); langDropdown.style.opacity = '0'; langDropdown.style.transform = 'scale(0.9)'; } });
-
-                    const settingsChangeHandler = () => { saveSettings(); this.draw(); };
-                    this.settingsUI.theme.addEventListener('change', (e) => { applyTheme(e.target.value); this.draw(); });
-                    this.settingsUI.pinColor.addEventListener('change', (e) => { gameSettings.pinColor = e.target.value; settingsChangeHandler(); });
-                    this.settingsUI.circleStyle.addEventListener('change', (e) => { gameSettings.circleStyle = e.target.value; settingsChangeHandler(); });
-                    this.settingsUI.backgroundStyle.addEventListener('change', (e) => { this.starfield = []; gameSettings.backgroundStyle = e.target.value; settingsChangeHandler(); });
-                    this.settingsUI.pinPlacement.addEventListener('change', (e) => { gameSettings.pinPlacement = e.target.value; settingsChangeHandler(); });
-                    this.settingsUI.particleStyle.addEventListener('change', (e) => { gameSettings.particleStyle = e.target.value; settingsChangeHandler(); });
-                    this.settingsUI.sound.addEventListener('change', (e) => { gameSettings.sound = e.target.checked; saveSettings(); });
-                    this.settingsUI.vibration.addEventListener('change', (e) => { gameSettings.vibration = e.target.checked; saveSettings(); });
-                    
-                    this.listenersAttached = true;
-                }
-
-                vibrate(d) { if (gameSettings.vibration && navigator.vibrate) navigator.vibrate(d); }
-                triggerScreenShake(m, d) { this.screenShakeMagnitude = m; this.screenShakeTime = d; }
-                pauseGame() { if (this.state !== 'playing') return; this.state = 'paused'; this.showScreen('pause'); }
-                resumeGame() { if (this.state !== 'paused') return; this.state = 'playing'; this.showScreen(null); this.lastTime = performance.now(); requestAnimationFrame(this.gameLoop.bind(this)); }
-
-                async startGame() {
-                    await this.soundManager.unlockAudio();
-                    this.state = 'playing'; this.score = 0; this.level = 1;
-                    this.levelManager.resetForNewGame(); this.setupLevel(); this.updateUI(); this.showScreen(null);
-                    this.lastTime = performance.now();
-                    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-                    this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
-                }
-
-                setupLevel() {
-                    const d = this.levelManager.getLevelData(this.level);
-                    this.pinsToShoot = d.pins; this.maxPinsForLevel = d.pins;
-                    this.pinsPlacedThisLevel = 0; this.pinsOnCircle = []; this.powerUpsOnCircle = []; this.obstacles = [];
-                    this.activePowerUps = {}; this.comboCount = 0; this.comboTimer = 0;
-                    this.circle = { angle: Math.random() * Math.PI * 2, speed: d.speed, direction: Math.random() > 0.5 ? 1 : -1, directionChangePins: [], isBoss: !!d.isBoss, baseRadius: this.circleRadius };
-                    if (d.dChanges > 0) { let p = Array.from({length: this.pinsToShoot - 2}, (_, i) => i + 2); for (let i = 0; i < d.dChanges; i++) { if (p.length === 0) break; const c = Math.floor(Math.random() * p.length); this.circle.directionChangePins.push(this.pinsToShoot - p.splice(c, 1)[0] + 1); } }
-                    for (let i = 0; i < d.obstacles; i++) {
-                        this.obstacles.push({
-                            angle: (i * 2 * Math.PI) / d.obstacles,
-                            speed: (Math.random() * 0.005 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
-                            distance: CONFIG.PHYSICS.OBSTACLE_DISTANCE_RATIO,
-                            distanceDirection: Math.random() > 0.5 ? 1 : -1
-                        });
-                    }
-                    if (Math.random() < d.pChance) this.spawnPowerUp();
-                    this.spawnPin();
-                }
-                
-                spawnPowerUp() {
-                    const p = Object.values(GAME_SKILLS)[Math.floor(Math.random() * Object.values(GAME_SKILLS).length)];
-                    let a, s = false, t = 0;
-                    while (!s && t < 10) { a = Math.random() * Math.PI * 2; s = this.pinsOnCircle.every(pin => { let d = Math.abs(pin.angle - a); return Math.min(d, 2 * Math.PI - d) >= CONFIG.PHYSICS.COLLISION_THRESHOLD * 2; }); t++; }
-                    if (s) this.powerUpsOnCircle.push({ angle: a, type: p.type, icon: p.icon });
-                }
-
-                spawnPin() {
-                    const startY = this.canvas.height / (window.devicePixelRatio || 1);
-                    this.currentPin = { y: startY, isFlying: false };
-                }
-                shootPin() {
-                    if (this.state !== 'playing' || !this.currentPin || this.currentPin.isFlying) return;
-                    this.currentPin.isFlying = true; this.soundManager.play('shoot'); this.vibrate(50);
-                    this.pinShotTime = performance.now();
-                }
-
-                gameLoop(time) {
-                    if (this.state === 'ended') return;
-                    this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
-                    if (this.state !== 'playing') return;
-                    const dt = Math.min(32, time - this.lastTime) / (1000 / 60);
-                    this.lastTime = time;
-                    this.update(dt); this.draw();
-                }
-
-                update(dt) {
-                    let speedMultiplier = this.activePowerUps.slow ? 0.5 : 1;
-                    this.circle.angle = (this.circle.angle + this.circle.speed * this.circle.direction * speedMultiplier * dt) % (2 * Math.PI);
-                    
-                    this.obstacles.forEach(o => {
-                        o.angle = (o.angle + o.speed * speedMultiplier * dt) % (2 * Math.PI);
-                        if (this.level >= 10) {
-                            o.distance += 0.001 * o.distanceDirection * dt;
-                            if (o.distance > 0.6 || o.distance < 0.4) {
-                                o.distanceDirection *= -1;
-                                o.distance = Math.max(0.4, Math.min(0.6, o.distance));
-                            }
-                        }
-                    });
-                    
-                    if (this.currentPin?.isFlying) {
-                        this.currentPin.y -= CONFIG.PHYSICS.PIN_FLY_SPEED * dt;
-                        this.checkCollision();
-                    }
-
-                    Object.keys(this.activePowerUps).forEach(k => { if (k !== 'shield' && k !== 'bomb') { this.activePowerUps[k] -= dt; if (this.activePowerUps[k] <= 0) { delete this.activePowerUps[k]; this.updatePowerUpDisplay(); } } });
-                    this.comboTimer = Math.max(0, this.comboTimer - dt); if(this.comboTimer === 0) this.comboCount = 0;
-                    this.updateParticles(dt);
-                    if (this.screenShakeTime > 0) {
-                        this.screenShakeTime -= dt;
-                        const sx = (Math.random() - 0.5) * this.screenShakeMagnitude;
-                        const sy = (Math.random() - 0.5) * this.screenShakeMagnitude;
-                        this.canvas.style.transform = `translate(${sx}px, ${sy}px)`;
-                    } else this.canvas.style.transform = 'translate(0, 0)';
-                }
-                
-                checkCollision() {
-                    if (!this.currentPin?.isFlying) return;
-
-                    const pinTipY = this.currentPin.y - this.pinLength - (gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0);
-                    
-                    if (pinTipY <= this.center.y + this.circleRadius) {
-                        this.currentPin.isFlying = false;
-                        const newPinAngle = (1.5 * Math.PI - this.circle.angle + 2 * Math.PI) % (2 * Math.PI);
-                        const threshold = CONFIG.PHYSICS.COLLISION_THRESHOLD;
-                        let isCloseCall = false;
-
-                        for (const o of this.obstacles) { let d = Math.abs(newPinAngle - o.angle); if (Math.min(d, 2 * Math.PI - d) < threshold) { this.gameOver(); return; } }
-                        for (const p of this.pinsOnCircle) {
-                            let d = Math.abs(newPinAngle - p.angle); d = Math.min(d, 2 * Math.PI - d);
-                            if (d < threshold) {
-                                if (this.activePowerUps.shield) {
-                                    this.soundManager.play('hit'); this.createParticles(this.center.x, this.center.y + this.circleRadius, GAME_SKILLS.SHIELD.color, 30);
-                                    delete this.activePowerUps.shield; this.updatePowerUpDisplay();
-                                    this.pinsToShoot--; this.currentPin = null;
-                                    if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
-                                    this.updateUI(); return;
-                                } else { this.triggerScreenShake(8, 20); this.gameOver(); return; }
-                            }
-                            if (d < threshold * 1.5) isCloseCall = true;
-                        }
-                        
-                        this.levelManager.updateStats((performance.now() - this.pinShotTime) / 1000, isCloseCall, this.comboTimer > 0);
-                        this.placePin(newPinAngle);
-                        if (isCloseCall) { this.showFeedback("KIL PAYI!", "#FBBC05"); this.vibrate(20); this.triggerScreenShake(4, 10); }
-                    }
-                }
-                
-                placePin(newPinAngle) {
-                    let hitIdx = this.powerUpsOnCircle.findIndex(p => { let d = Math.abs(p.angle - newPinAngle); return Math.min(d, 2 * Math.PI - d) < CONFIG.PHYSICS.COLLISION_THRESHOLD; });
-                    if (hitIdx > -1) {
-                        const hitP = this.powerUpsOnCircle.splice(hitIdx, 1)[0];
-                        if (hitP.type === 'bomb') {
-                            this.activateBomb(newPinAngle); this.pinsToShoot--; this.currentPin = null;
-                            if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
-                            this.updateUI(); return;
-                        } else this.activatePowerUp(hitP.type);
-                    }
-                    this.soundManager.play('hit');
-                    this.pinsOnCircle.push({ angle: newPinAngle, number: this.pinsToShoot });
-                    this.pinsPlacedThisLevel++;
-                    this.comboTimer = CONFIG.GAME.COMBO_TIME_LIMIT; this.comboCount++;
-                    if (this.comboCount > 1) { this.showFeedback(`KOMBO x${this.comboCount}!`, this.getPinColor()); this.score += this.comboCount * CONFIG.GAME.COMBO_BONUS_SCORE; }
-                    if (this.circle.directionChangePins.includes(this.pinsToShoot)) { this.circle.direction *= -1; this.showFeedback("TERS YÖN!", "#EF4444"); this.vibrate(80); }
-                    this.score += Math.floor(CONFIG.GAME.SCORE_PER_PIN * (this.activePowerUps.multiplier ? CONFIG.GAME.BONUS_MULTIPLIER : 1));
-                    this.pinsToShoot--; this.currentPin = null;
-                    if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
-                    this.updateUI();
-                }
-
-                activatePowerUp(type) { /* ... (no changes) ... */ this.soundManager.play("powerUp");const t=Object.values(GAME_SKILLS).find(t=>t.type===type);t&&(this.activePowerUps[type]=t.duration,this.updatePowerUpDisplay(),this.createParticles(this.center.x,this.center.y,t.color,30))}
-                activateBomb(angle) { /* ... (no changes) ... */ this.soundManager.play("bomb");const t=CONFIG.PHYSICS.COLLISION_THRESHOLD*4;let e=0;this.pinsOnCircle=this.pinsOnCircle.filter(s=>{let i=Math.abs(s.angle-angle);return i=Math.min(i,2*Math.PI-i),i<t?(e++,!1):!0}),e>0&&(this.score+=Math.floor(CONFIG.GAME.SCORE_PER_PIN*(this.activePowerUps.multiplier?CONFIG.GAME.BONUS_MULTIPLIER:1))*e,this.showFeedback("BOOM!",GAME_SKILLS.BOMB.color));const s=this.center.x+Math.cos(this.circle.angle+angle)*this.circleRadius,i=this.center.y+Math.sin(this.circle.angle+angle)*this.circleRadius;this.createParticles(s,i,GAME_SKILLS.BOMB.color,50),this.vibrate([80,40,80])}
-                updatePowerUpDisplay() { /* ... (no changes) ... */ this.ui.powerUpIndicator.innerHTML="";Object.keys(this.activePowerUps).forEach(t=>{const e=Object.values(GAME_SKILLS).find(e=>e.type===t);if(!e)return;const s=document.createElement("div");s.className="powerUpBadge w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white/50",s.textContent=e.icon,s.style.backgroundColor=e.color,s.style.color="white",this.ui.powerUpIndicator.appendChild(s),setTimeout(()=>{s.classList.add("active")},10)})}
-                createParticles(x, y, c, n = 30) { for (let i = 0; i < n; i++) { if (gameSettings.particleStyle === 'bubble') { this.particles.push({ x, y, size: Math.random() * 4 + 2, color: c, speedX: (Math.random() - 0.5) * 2, speedY: -Math.random() * 3 - 1, life: 40 + Math.random() * 30, type: 'bubble' }); } else { this.particles.push({ x, y, size: Math.random() * 2 + 1, color: c, speedX: (Math.random() - 0.5) * 7, speedY: (Math.random() - 0.5) * 7, life: 30 + Math.random() * 20, type: 'spark' }); } } }
-                updateParticles(dt) { this.particles = this.particles.filter(p => { p.x += p.speedX * dt; p.y += p.speedY * dt; if (p.type === 'bubble') p.size *= 0.98; p.life -= dt; return p.life > 0; }); }
-
-                levelUp() { this.state = 'levelup'; this.soundManager.play('levelUp'); this.vibrate(100); const l = gameSettings.language; this.ui.levelUpText.textContent = `${translations[l].level_up_title.replace('!', '')} ${this.level + 1}`; this.ui.levelUpHighScoreText.textContent = `${translations[l].high_score}: ${Math.max(this.highScore, this.score)}`; this.showScreen('levelUp'); }
-                continueToNextLevel() { this.level++; this.setupLevel(); this.state = 'playing'; this.showScreen(null); this.lastTime = performance.now(); requestAnimationFrame(this.gameLoop.bind(this)); }
-
-                gameOver() {
-                    if(this.state === 'ended') return;
-                    this.state = 'ended'; this.soundManager.play('gameOver'); this.vibrate([100, 50, 100]); this.triggerScreenShake(10, 25);
-                    if (this.score > this.highScore) { this.highScore = this.score; localStorage.setItem('aaGameHighScore', this.highScore); }
-                    this.ui.finalScore.textContent = this.score; this.ui.highScoreText.textContent = this.highScore;
-                    this.generateGameOverFeedback(); this.showScreen('gameOver');
-                }
-
-                generateGameOverFeedback() {
-                    const acc = this.levelManager.getAccuracy(); let key = "feedback_effort";
-                    if (this.level < 3) key = "feedback_practice"; else if (acc > 0.95) key = "feedback_accuracy";
-                    else if (this.levelManager.playerStats.combos > this.level) key = "feedback_combo"; else if (acc < 0.8) key = "feedback_anticipate";
-                    this.ui.gameOverFeedback.textContent = translations[gameSettings.language][key];
-                }
-                
-                getPinColor() { const c = { default: getComputedStyle(document.documentElement).getPropertyValue('--button-bg-start'), blue: '#3B82F6', red: '#EF4444', green: '#22C55E', yellow: '#FBBF24', pink: '#EC4899' }; return c[gameSettings.pinColor] || c.default; }
-
-                draw(isPreview = false) {
-                    const canvas = isPreview ? this.previewCanvas : this.canvas;
-                    const ctx = isPreview ? this.previewCtx : this.ctx;
-                    if (!ctx) return;
-
-                    const dpr = isPreview ? 1 : (window.devicePixelRatio || 1);
-                    const logicalWidth = canvas.width / dpr;
-                    const logicalHeight = canvas.height / dpr;
-                    ctx.clearRect(0, 0, logicalWidth, logicalHeight);
-                    
-                    this.drawBackground(ctx, logicalWidth, logicalHeight);
-
-                    if (isPreview) {
-                        const previewCenter = { x: logicalWidth / 2, y: logicalHeight / 2 };
-                        const previewRadius = logicalWidth * 0.35;
-                        this.drawCircle(ctx, previewCenter, previewRadius);
-                        this.drawPin(ctx, Math.PI / 2, null, null, previewCenter, previewRadius);
-                        this.drawPin(ctx, Math.PI, null, null, previewCenter, previewRadius);
-                    } else {
-                        this.drawCircle(this.ctx, this.center, this.circleRadius);
-                        this.drawObstacles();
-                        this.pinsOnCircle.forEach(p => this.drawPin(this.ctx, p.angle, null, p.number, this.center, this.circleRadius));
-                        this.powerUpsOnCircle.forEach(p => this.drawPowerUpOnCircle(p));
-                        if (this.currentPin) this.drawPin(this.ctx, null, this.currentPin.y, this.pinsToShoot, this.center, this.circleRadius);
-                        if (this.activePowerUps.shield) { this.ctx.beginPath(); this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 10, 0, 2 * Math.PI); this.ctx.strokeStyle = GAME_SKILLS.SHIELD.color; this.ctx.lineWidth = 4; this.ctx.stroke(); }
-                        this.drawParticles();
-                    }
-                }
-
-                drawBackground(ctx, w, h) {
-                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
-                    ctx.fillRect(0, 0, w, h);
-                    if (gameSettings.backgroundStyle === 'starry') {
-                        if (this.starfield.length === 0) {
-                            for(let i = 0; i < 100; i++) this.starfield.push({x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.5});
-                        }
-                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--hint-color');
-                        this.starfield.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 2*Math.PI); ctx.fill(); });
-                    } else if (gameSettings.backgroundStyle === 'geometric') {
-                        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
-                        ctx.lineWidth = 0.5;
-                        for (let i = 0; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
-                        for (let i = 0; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
-                    }
-                }
-
-                drawCircle(ctx, center, radius) {
-                    ctx.save();
-                    ctx.shadowColor = this.getPinColor();
-                    ctx.shadowBlur = 25 + Math.sin(performance.now() / 300) * 5;
-                    const grad = ctx.createRadialGradient(center.x, center.y, radius * 0.8, center.x, center.y, radius);
-                    grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-start'));
-                    grad.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-end'));
-                    ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-                    ctx.fillStyle = grad; ctx.fill();
-                    
-                    if (gameSettings.circleStyle === 'neon') {
-                        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--button-bg-end');
-                        ctx.lineWidth = 4; ctx.stroke();
-                    } else if (gameSettings.circleStyle === 'techno') {
-                        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--hint-color');
-                        ctx.lineWidth = 1;
-                        for(let i = 0; i < 12; i++) {
-                            ctx.save();
-                            ctx.translate(center.x, center.y);
-                            ctx.rotate(i * Math.PI / 6 + (this.circle.angle || 0) * 0.2);
-                            ctx.beginPath(); ctx.moveTo(radius * 0.6, 0); ctx.lineTo(radius, 0); ctx.stroke();
-                            ctx.restore();
-                        }
-                    }
-                    ctx.restore(); 
-
-                    if (this.circle.isBoss && !this.previewCtx) {
-                        ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-                        ctx.strokeStyle = '#EF4444'; ctx.lineWidth = 4;
-                        ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 200) * 0.4;
-                        ctx.stroke(); ctx.globalAlpha = 1;
-                    }
-                }
-
-                drawObstacles() {
-                    this.obstacles.forEach(o => {
-                        const angle = (o.angle + this.circle.angle);
-                        const x = this.center.x + Math.cos(angle) * this.circleRadius * o.distance;
-                        const y = this.center.y + Math.sin(angle) * this.circleRadius * o.distance;
-                        const size = this.circleRadius * CONFIG.PHYSICS.OBSTACLE_SIZE_RATIO;
-                        this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--hint-color");
-                        this.ctx.globalAlpha = 0.7;
-                        this.ctx.fillRect(x - size / 2, y - size / 2, size, size);
-                        this.ctx.globalAlpha = 1;
-                    });
-                }
-                drawPowerUpOnCircle(p) { /* ... (no changes) ... */ const t=p.angle+this.circle.angle,e=this.center.x+Math.cos(t)*this.circleRadius,s=this.center.y+Math.sin(t)*this.circleRadius;this.ctx.font=`${2.5*this.pinHeadRadius}px Arial`,this.ctx.textAlign="center",this.ctx.textBaseline="middle",this.ctx.fillText(p.icon,e,s)}
-
-                drawPin(ctx, angle, yPos, number, center, radius) {
-                    ctx.save();
-                    const pinColor = this.getPinColor();
-                    const pinLineStart = gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0;
-                    const pinLength = radius * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
-                    const arrowWidth = pinLength * 0.4;
-                    const arrowHeadSize = pinLength * 0.5;
-
-                    const drawArrow = () => {
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0); // Tail center
-                        ctx.lineTo(0, -pinLength + arrowHeadSize); // Shaft
-                        ctx.lineTo(-arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base left
-                        ctx.lineTo(0, -pinLength); // Arrow tip
-                        ctx.lineTo(arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base right
-                        ctx.lineTo(0, -pinLength + arrowHeadSize);
-                        ctx.closePath();
-
-                        ctx.fillStyle = pinColor;
-                        ctx.strokeStyle = pinColor;
-                        ctx.lineWidth = 2;
-                        
-                        ctx.shadowColor = pinColor;
-                        ctx.shadowBlur = 10;
-                        
-                        ctx.fill();
-                        ctx.stroke();
-                    };
-
-                    if (angle !== null) { // Attached pin
-                        ctx.translate(center.x, center.y);
-                        ctx.rotate(angle + (this.circle.angle || 0));
-                        ctx.translate(radius - pinLineStart, 0);
-                        ctx.rotate(Math.PI); // Point inwards
-                        drawArrow();
-                    } else { // Flying or waiting pin
-                        ctx.translate(center.x, yPos);
-                        drawArrow();
+                        if (d < threshold * 1.5) isCloseCall = true;
                     }
                     
-                    ctx.restore();
-                }
-
-                drawParticles() { this.particles.forEach(p => { this.ctx.globalAlpha = p.life / 60; this.ctx.fillStyle = p.color; this.ctx.beginPath(); if (p.type === 'bubble') { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.stroke(); } else { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.fill(); } }); this.ctx.globalAlpha = 1; }
-                
-                updateUI() {
-                    if (this.ui.score.textContent !== String(this.score)) { this.ui.score.textContent = this.score; this.ui.score.classList.add('animate-pulse-quick'); setTimeout(() => this.ui.score.classList.remove('animate-pulse-quick'), 300); }
-                    this.ui.level.textContent = this.level;
-                    this.ui.highScore.textContent = Math.max(this.highScore, this.score);
-                    this.ui.progressBar.style.width = `${this.maxPinsForLevel > 0 ? (this.pinsPlacedThisLevel / this.maxPinsForLevel) * 100 : 0}%`;
-                }
-
-                showScreen(name) {
-                    Object.values(this.screens).forEach(s => s.classList.remove('active'));
-                    const isGame = !name || name === 'pause';
-                    document.getElementById('game-hud').style.display = isGame ? 'block' : 'none';
-                    if (name && this.screens[name]) this.screens[name].classList.add('active');
-                }
-                
-                showFeedback(text, color) { this.ui.gameFeedback.textContent = text; this.ui.gameFeedback.style.color = color; this.ui.gameFeedback.style.opacity = 1; this.ui.gameFeedback.style.transform = 'translateY(0)'; setTimeout(() => { this.ui.gameFeedback.style.opacity = 0; this.ui.gameFeedback.style.transform = 'translateY(-20px)'; }, 800); }
-            
-                runSettingsPreview() {
-                    if (!this.previewCanvas) return;
-                    const dpr = window.devicePixelRatio || 1;
-                    const size = this.previewCanvas.clientWidth;
-                    this.previewCanvas.width = size * dpr;
-                    this.previewCanvas.height = size * dpr;
-                    this.previewCtx.scale(dpr, dpr);
-                    
-                    const drawLoop = () => {
-                        this.draw(true);
-                        this.previewAnimation = requestAnimationFrame(drawLoop);
-                    };
-                    
-                    if (this.previewAnimation) cancelAnimationFrame(this.previewAnimation);
-                    drawLoop();
+                    this.levelManager.updateStats((performance.now() - this.pinShotTime) / 1000, isCloseCall, this.comboTimer > 0);
+                    this.placePin(newPinAngle);
+                    if (isCloseCall) { this.showFeedback("KIL PAYI!", "#FBBC05"); this.vibrate(20); this.triggerScreenShake(4, 10); }
                 }
             }
             
-            new AAGame();
+            placePin(newPinAngle) {
+                let hitIdx = this.powerUpsOnCircle.findIndex(p => { let d = Math.abs(p.angle - newPinAngle); return Math.min(d, 2 * Math.PI - d) < CONFIG.PHYSICS.COLLISION_THRESHOLD; });
+                if (hitIdx > -1) {
+                    const hitP = this.powerUpsOnCircle.splice(hitIdx, 1)[0];
+                    if (hitP.type === 'bomb') {
+                        this.activateBomb(newPinAngle); this.pinsToShoot--; this.currentPin = null;
+                        if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
+                        this.updateUI(); return;
+                    } else this.activatePowerUp(hitP.type);
+                }
+                this.soundManager.play('hit');
+                this.pinsOnCircle.push({ angle: newPinAngle, number: this.pinsToShoot });
+                this.pinsPlacedThisLevel++;
+                this.comboTimer = CONFIG.GAME.COMBO_TIME_LIMIT; this.comboCount++;
+                if (this.comboCount > 1) { this.showFeedback(`KOMBO x${this.comboCount}!`, this.getPinColor()); this.score += this.comboCount * CONFIG.GAME.COMBO_BONUS_SCORE; }
+                if (this.circle.directionChangePins.includes(this.pinsToShoot)) { this.circle.direction *= -1; this.showFeedback("TERS YÖN!", "#EF4444"); this.vibrate(80); }
+                this.score += Math.floor(CONFIG.GAME.SCORE_PER_PIN * (this.activePowerUps.multiplier ? CONFIG.GAME.BONUS_MULTIPLIER : 1));
+                this.pinsToShoot--; this.currentPin = null;
+                if (this.pinsToShoot === 0) this.levelUp(); else this.spawnPin();
+                this.updateUI();
+            }
 
-        } catch (error) {
-            document.body.innerHTML = `<div style="font-family: sans-serif; text-align: center; padding: 40px;"><h1>Bir hata oluştu</h1><p>Oyun yüklenemedi. Lütfen daha sonra tekrar deneyin.</p><pre style="text-align: left; background: #eee; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${error.stack}</pre></div>`;
-            console.error("Critical error in AAGame:", error);
+            activatePowerUp(type) { this.soundManager.play("powerUp");const t=Object.values(GAME_SKILLS).find(t=>t.type===type);t&&(this.activePowerUps[type]=t.duration,this.updatePowerUpDisplay(),this.createParticles(this.center.x,this.center.y,t.color,30))}
+            activateBomb(angle) { this.soundManager.play("bomb");const t=CONFIG.PHYSICS.COLLISION_THRESHOLD*4;let e=0;this.pinsOnCircle=this.pinsOnCircle.filter(s=>{let i=Math.abs(s.angle-angle);return i=Math.min(i,2*Math.PI-i),i<t?(e++,!1):!0}),e>0&&(this.score+=Math.floor(CONFIG.GAME.SCORE_PER_PIN*(this.activePowerUps.multiplier?CONFIG.GAME.BONUS_MULTIPLIER:1))*e,this.showFeedback("BOOM!",GAME_SKILLS.BOMB.color));const s=this.center.x+Math.cos(this.circle.angle+angle)*this.circleRadius,i=this.center.y+Math.sin(this.circle.angle+angle)*this.circleRadius;this.createParticles(s,i,GAME_SKILLS.BOMB.color,50),this.vibrate([80,40,80])}
+            updatePowerUpDisplay() { this.ui.powerUpIndicator.innerHTML="";Object.keys(this.activePowerUps).forEach(t=>{const e=Object.values(GAME_SKILLS).find(e=>e.type===t);if(!e)return;const s=document.createElement("div");s.className="powerUpBadge w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white/50",s.textContent=e.icon,s.style.backgroundColor=e.color,s.style.color="white",this.ui.powerUpIndicator.appendChild(s),setTimeout(()=>{s.classList.add("active")},10)})}
+            createParticles(x, y, c, n = 30) { for (let i = 0; i < n; i++) { if (gameSettings.particleStyle === 'bubble') { this.particles.push({ x, y, size: Math.random() * 4 + 2, color: c, speedX: (Math.random() - 0.5) * 2, speedY: -Math.random() * 3 - 1, life: 40 + Math.random() * 30, type: 'bubble' }); } else { this.particles.push({ x, y, size: Math.random() * 2 + 1, color: c, speedX: (Math.random() - 0.5) * 7, speedY: (Math.random() - 0.5) * 7, life: 30 + Math.random() * 20, type: 'spark' }); } } }
+            updateParticles(dt) { this.particles = this.particles.filter(p => { p.x += p.speedX * dt; p.y += p.speedY * dt; if (p.type === 'bubble') p.size *= 0.98; p.life -= dt; return p.life > 0; }); }
+
+            levelUp() { this.state = 'levelup'; this.soundManager.play('levelUp'); this.vibrate(100); const l = gameSettings.language; this.ui.levelUpText.textContent = `${translations[l].level_up_title.replace('!', '')} ${this.level + 1}`; this.ui.levelUpHighScoreText.textContent = `${translations[l].high_score}: ${Math.max(this.highScore, this.score)}`; this.showScreen('levelUp'); }
+            continueToNextLevel() { this.level++; this.setupLevel(); this.state = 'playing'; this.showScreen(null); this.lastTime = performance.now(); requestAnimationFrame(this.gameLoop.bind(this)); }
+
+            gameOver() {
+                if(this.state === 'ended') return;
+                this.state = 'ended'; this.soundManager.play('gameOver'); this.vibrate([100, 50, 100]); this.triggerScreenShake(10, 25);
+                if (this.score > this.highScore) { this.highScore = this.score; localStorage.setItem('aaGameHighScore', this.highScore); }
+                this.ui.finalScore.textContent = this.score; this.ui.highScoreText.textContent = this.highScore;
+                this.generateGameOverFeedback(); this.showScreen('gameOver');
+            }
+
+            generateGameOverFeedback() {
+                const acc = this.levelManager.getAccuracy(); let key = "feedback_effort";
+                if (this.level < 3) key = "feedback_practice"; else if (acc > 0.95) key = "feedback_accuracy";
+                else if (this.levelManager.playerStats.combos > this.level) key = "feedback_combo"; else if (acc < 0.8) key = "feedback_anticipate";
+                this.ui.gameOverFeedback.textContent = translations[gameSettings.language][key];
+            }
+            
+            getPinColor() { const c = { default: getComputedStyle(document.documentElement).getPropertyValue('--button-bg-start'), blue: '#3B82F6', red: '#EF4444', green: '#22C55E', yellow: '#FBBF24', pink: '#EC4899' }; return c[gameSettings.pinColor] || c.default; }
+
+            draw(isPreview = false) {
+                const canvas = isPreview ? this.previewCanvas : this.canvas;
+                const ctx = isPreview ? this.previewCtx : this.ctx;
+                if (!ctx) return;
+
+                const dpr = isPreview ? 1 : (window.devicePixelRatio || 1);
+                const logicalWidth = canvas.width / dpr;
+                const logicalHeight = canvas.height / dpr;
+                ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+                
+                this.drawBackground(ctx, logicalWidth, logicalHeight);
+
+                if (isPreview) {
+                    const previewCenter = { x: logicalWidth / 2, y: logicalHeight / 2 };
+                    const previewRadius = logicalWidth * 0.35;
+                    this.drawCircle(ctx, previewCenter, previewRadius);
+                    this.drawPin(ctx, Math.PI / 2, null, null, previewCenter, previewRadius);
+                    this.drawPin(ctx, Math.PI, null, null, previewCenter, previewRadius);
+                } else {
+                    this.drawCircle(this.ctx, this.center, this.circleRadius);
+                    this.drawObstacles();
+                    this.pinsOnCircle.forEach(p => this.drawPin(this.ctx, p.angle, null, p.number, this.center, this.circleRadius));
+                    this.powerUpsOnCircle.forEach(p => this.drawPowerUpOnCircle(p));
+                    if (this.currentPin) this.drawPin(this.ctx, null, this.currentPin.y, this.pinsToShoot, this.center, this.circleRadius);
+                    if (this.activePowerUps.shield) { this.ctx.beginPath(); this.ctx.arc(this.center.x, this.center.y, this.circleRadius + 10, 0, 2 * Math.PI); this.ctx.strokeStyle = GAME_SKILLS.SHIELD.color; this.ctx.lineWidth = 4; this.ctx.stroke(); }
+                    this.drawParticles();
+                }
+            }
+
+            drawBackground(ctx, w, h) {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+                ctx.fillRect(0, 0, w, h);
+                if (gameSettings.backgroundStyle === 'starry') {
+                    if (this.starfield.length === 0) {
+                        for(let i = 0; i < 100; i++) this.starfield.push({x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.5});
+                    }
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--hint-color');
+                    this.starfield.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 2*Math.PI); ctx.fill(); });
+                } else if (gameSettings.backgroundStyle === 'geometric') {
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+                    for (let i = 0; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
+                }
+            }
+
+            drawCircle(ctx, center, radius) {
+                ctx.save();
+                ctx.shadowColor = this.getPinColor();
+                ctx.shadowBlur = 25 + Math.sin(performance.now() / 300) * 5;
+                const grad = ctx.createRadialGradient(center.x, center.y, radius * 0.8, center.x, center.y, radius);
+                grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-start'));
+                grad.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue('--circle-color-end'));
+                ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = grad; ctx.fill();
+                
+                if (gameSettings.circleStyle === 'neon') {
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--button-bg-end');
+                    ctx.lineWidth = 4; ctx.stroke();
+                } else if (gameSettings.circleStyle === 'techno') {
+                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--hint-color');
+                    ctx.lineWidth = 1;
+                    for(let i = 0; i < 12; i++) {
+                        ctx.save();
+                        ctx.translate(center.x, center.y);
+                        ctx.rotate(i * Math.PI / 6 + (this.circle.angle || 0) * 0.2);
+                        ctx.beginPath(); ctx.moveTo(radius * 0.6, 0); ctx.lineTo(radius, 0); ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+                ctx.restore(); 
+
+                if (this.circle.isBoss && !this.previewCtx) {
+                    ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#EF4444'; ctx.lineWidth = 4;
+                    ctx.globalAlpha = 0.6 + Math.sin(performance.now() / 200) * 0.4;
+                    ctx.stroke(); ctx.globalAlpha = 1;
+                }
+            }
+
+            drawObstacles() {
+                this.obstacles.forEach(o => {
+                    const angle = (o.angle + this.circle.angle);
+                    const x = this.center.x + Math.cos(angle) * this.circleRadius * o.distance;
+                    const y = this.center.y + Math.sin(angle) * this.circleRadius * o.distance;
+                    const size = this.circleRadius * CONFIG.PHYSICS.OBSTACLE_SIZE_RATIO;
+                    this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--hint-color");
+                    this.ctx.globalAlpha = 0.7;
+                    this.ctx.fillRect(x - size / 2, y - size / 2, size, size);
+                    this.ctx.globalAlpha = 1;
+                });
+            }
+            drawPowerUpOnCircle(p) { const t=p.angle+this.circle.angle,e=this.center.x+Math.cos(t)*this.circleRadius,s=this.center.y+Math.sin(t)*this.circleRadius;this.ctx.font=`${2.5*this.pinHeadRadius}px Arial`,this.ctx.textAlign="center",this.ctx.textBaseline="middle",this.ctx.fillText(p.icon,e,s)}
+
+            drawPin(ctx, angle, yPos, number, center, radius) {
+                ctx.save();
+                const pinColor = this.getPinColor();
+                const pinLineStart = gameSettings.pinPlacement === 'inside' ? CONFIG.PHYSICS.PIN_OFFSET_FROM_EDGE : 0;
+                const pinLength = radius * CONFIG.PHYSICS.PIN_LENGTH_RATIO;
+                const arrowHeadSize = pinLength * 0.3;
+                const arrowWidth = arrowHeadSize * 2; // for 90 degree tip angle
+
+                const drawArrow = () => {
+                    const grad = ctx.createLinearGradient(0, 0, 0, -pinLength);
+                    grad.addColorStop(0, pinColor);
+                    grad.addColorStop(1, shadeColor(pinColor, -20));
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0); // Tail center
+                    ctx.lineTo(0, -pinLength + arrowHeadSize); // Shaft
+                    ctx.lineTo(-arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base left
+                    ctx.lineTo(0, -pinLength); // Arrow tip
+                    ctx.lineTo(arrowWidth / 2, -pinLength + arrowHeadSize); // Arrow base right
+                    ctx.lineTo(0, -pinLength + arrowHeadSize);
+                    ctx.closePath();
+
+                    ctx.fillStyle = grad;
+                    ctx.strokeStyle = pinColor;
+                    ctx.lineWidth = 2;
+                    
+                    ctx.shadowColor = pinColor;
+                    ctx.shadowBlur = 10;
+                    
+                    ctx.fill();
+                    ctx.stroke();
+                };
+
+                if (angle !== null) { // Attached pin
+                    ctx.translate(center.x, center.y);
+                    ctx.rotate(angle + (this.circle.angle || 0));
+                    ctx.translate(radius - pinLineStart, 0);
+                    ctx.rotate(Math.PI); // Point inwards
+                    drawArrow();
+                } else { // Flying or waiting pin
+                    ctx.translate(center.x, yPos);
+                    drawArrow();
+                }
+                
+                ctx.restore();
+            }
+
+            drawParticles() { this.particles.forEach(p => { this.ctx.globalAlpha = p.life / 60; this.ctx.fillStyle = p.color; this.ctx.beginPath(); if (p.type === 'bubble') { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.stroke(); } else { this.ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI); this.ctx.fill(); } }); this.ctx.globalAlpha = 1; }
+            
+            updateUI() {
+                if (this.ui.score.textContent !== String(this.score)) { this.ui.score.textContent = this.score; this.ui.score.classList.add('animate-pulse-quick'); setTimeout(() => this.ui.score.classList.remove('animate-pulse-quick'), 300); }
+                this.ui.level.textContent = this.level;
+                this.ui.highScore.textContent = Math.max(this.highScore, this.score);
+                this.ui.progressBar.style.width = `${this.maxPinsForLevel > 0 ? (this.pinsPlacedThisLevel / this.maxPinsForLevel) * 100 : 0}%`;
+            }
+
+            showScreen(name) {
+                Object.values(this.screens).forEach(s => s.classList.remove('active'));
+                const isGame = !name || name === 'pause';
+                document.getElementById('game-hud').style.display = isGame ? 'block' : 'none';
+                if (name && this.screens[name]) this.screens[name].classList.add('active');
+            }
+            
+            showFeedback(text, color) { this.ui.gameFeedback.textContent = text; this.ui.gameFeedback.style.color = color; this.ui.gameFeedback.style.opacity = 1; this.ui.gameFeedback.style.transform = 'translateY(0)'; setTimeout(() => { this.ui.gameFeedback.style.opacity = 0; this.ui.gameFeedback.style.transform = 'translateY(-20px)'; }, 800); }
+        
+            runSettingsPreview() {
+                if (!this.previewCanvas) return;
+                const dpr = window.devicePixelRatio || 1;
+                const size = this.previewCanvas.clientWidth;
+                this.previewCanvas.width = size * dpr;
+                this.previewCanvas.height = size * dpr;
+                this.previewCtx.scale(dpr, dpr);
+                
+                const drawLoop = () => {
+                    this.draw(true);
+                    this.previewAnimation = requestAnimationFrame(drawLoop);
+                };
+                
+                if (this.previewAnimation) cancelAnimationFrame(this.previewAnimation);
+                drawLoop();
+            }
         }
-    });
-    </script>
-</body>
-</html>
+        
+        new AAGame();
+
+    } catch (error) {
+        document.body.innerHTML = `<div style="font-family: sans-serif; text-align: center; padding: 40px;"><h1>Bir hata oluştu</h1><p>Oyun yüklenemedi. Lütfen daha sonra tekrar deneyin.</p><pre style="text-align: left; background: #eee; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${error.stack}</pre></div>`;
+        console.error("Critical error in AAGame:", error);
+    }
+});
+</script>
